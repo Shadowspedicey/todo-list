@@ -20,5 +20,8 @@
   "devDependencies": {
     "webpack": "^5.45.1",
     "webpack-cli": "^4.7.2"
+  },
+  "dependencies": {
+    "date-fns": "^2.22.1"
   }
 }
