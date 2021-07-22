@@ -11,12 +11,13 @@ const Checklist = (name, checked) =>
 
 const Project = function(name, description, dueDate, priority, notes, checklist)
 {
-  const obj = { name, description, dueDate, priority, notes, checklist };
+  const progress = 0;
+  const obj = { name, description, dueDate, priority, notes, checklist, progress };
 
   projects.push(obj);
   return obj;
 }
-Project("Hello", "s", new Date(2021, 7 - 1, 24), "Medium", "", [Checklist("Intro", false), Checklist("Buildup", false)]);
+Project("Hello", "s", new Date(2021, 7 - 1, 25), "Medium", "", [Checklist("Intro", false), Checklist("Buildup", false), Checklist("Transition", false)]);
 Project("Hey", "s", new Date());
 
 const Interface = (() =>
@@ -41,7 +42,10 @@ const Interface = (() =>
 
     const progressBar = document.createElement("span");
     progressBar.classList.add("progress-bar");
-    progressBar.textContent = "0%";
+    progressBar.textContent = `${project.progress}%`;
+    const progressSpan = document.createElement("span");
+    progressSpan.id = "bar";
+    progressBar.appendChild(progressSpan);
     projectDOM.appendChild(progressBar);
 
     _projectsDiv.insertBefore(projectDOM, document.querySelector("#add"));
@@ -140,7 +144,14 @@ const InfoBox = (() =>
     {
       project[_infoBoxes[i].id] = _infoBoxes[i].querySelector("p").firstChild.textContent;
       if (_infoBoxes[i].id == "dueDate") project[_infoBoxes[i].id] = parse(_infoBoxes[i].querySelector("p").firstChild.textContent, "dd/MM/yyyy", new Date());
-    }
+    };
+    
+    //Calculates progress and saves it
+    (() =>
+    {
+      let _checkedTemp = _.filter(project.checklist, (_check) => _check.checked);
+      project.progress = (_checkedTemp.length / project.checklist.length) * 100;
+    })();
 
     (() =>
     {
@@ -150,7 +161,9 @@ const InfoBox = (() =>
       const progressBar = projectDOM.children[2];
 
       header.textContent = project.name;
-      remainingDays.textContent = `Remaining Days: ${differenceInDays(project.dueDate, new Date())}`; 
+      remainingDays.textContent = `Remaining Days: ${differenceInDays(project.dueDate, new Date())}`;
+      progressBar.firstChild.textContent = `${Math.round(project.progress)}%`;
+      progressBar.querySelector("#bar").style.width = `${project.progress}%`;
     })();
   }
 
@@ -210,6 +223,7 @@ const InfoBox = (() =>
         header.appendChild(h1);
         sideInfo.appendChild(header);
 
+        //Adds the checklist
         (() =>
         {
           for (let i = 0; i < project.checklist.length; i++)
@@ -227,6 +241,7 @@ const InfoBox = (() =>
             input.addEventListener("change", () =>
             {
               project.checklist[i].checked = input.checked;
+              Save(project);
             });
             div.appendChild(input);
 
@@ -237,6 +252,7 @@ const InfoBox = (() =>
         infoBox.appendChild(sideInfo);
       })();
 
+      //Adds close button
       (() =>
       {
         const close = document.createElement("span");
@@ -270,7 +286,6 @@ const InfoBox = (() =>
 
     (() =>
     {
-      console.log(p);
       p.addEventListener("mouseover", () =>
       {
         p.querySelector("span").classList.remove("hidden");
