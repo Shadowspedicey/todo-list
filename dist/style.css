@@ -106,6 +106,23 @@ html, body
   background: linear-gradient(to right, rgb(224, 224, 224), white 80% 100%);
 
   display: flex;
+
+  position: relative;
+}
+
+#info-box span
+{
+  cursor: pointer;
+
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+
+  border: 1px solid black;
+}
+#info-box span:hover
+{
+  background-color: rgb(238, 238, 238);
 }
 
 #main-info

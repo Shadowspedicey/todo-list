@@ -237,6 +237,16 @@ const InfoBox = (() =>
         infoBox.appendChild(sideInfo);
       })();
 
+      (() =>
+      {
+        const close = document.createElement("span");
+        close.classList.add("material-icons")
+        close.textContent = "close";
+
+        close.addEventListener("click", () => Close());
+
+        infoBox.appendChild(close);
+      })()
 
       infoContainer.appendChild(infoBox);
 
