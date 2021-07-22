@@ -110,6 +110,11 @@ const InfoBox = (() =>
     });
   }
 
+  const Save = () =>
+  {
+    
+  }
+
   const Create = (project) =>
   {
     (() =>
