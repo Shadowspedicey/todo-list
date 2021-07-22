@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { format, differenceInDays, getDate } from "date-fns";
+import { format, differenceInDays, parse } from "date-fns";
 
 const content = document.querySelector("#content");
 let projects = [];
@@ -69,14 +69,15 @@ const Interface = (() =>
 
 const InfoBox = (() =>
 {
-  const Edit = (p) =>
+  const Edit = (element, project) =>
   {
-    p.querySelector("span").remove();
+    //TODO Date and priority edit
+    element.querySelector("span").remove();
     const pInput = document.createElement("input");
     pInput.type = "text";
-    pInput.value = p.textContent;
-    p.parentElement.appendChild(pInput);
-    p.remove();
+    pInput.value = element.textContent;
+    element.parentElement.appendChild(pInput);
+    element.remove();
 
     pInput.addEventListener("keyup", (e) =>
     {
@@ -88,31 +89,49 @@ const InfoBox = (() =>
         const icon = document.createElement("span");
         icon.classList.add("material-icons", "hidden");
         icon.textContent = "edit";
-        p.appendChild(icon);
-        icon.addEventListener("click", () => Edit(p));
+        element.appendChild(icon);
+        icon.addEventListener("click", () => Edit(element));
 
         (() =>
         {
-          p.addEventListener("mouseover", () =>
+          element.addEventListener("mouseover", () =>
           {
-            p.querySelector("span").classList.remove("hidden");
+            element.querySelector("span").classList.remove("hidden");
           });
 
-          p.addEventListener("mouseout", () =>
+          element.addEventListener("mouseout", () =>
           {
-            p.querySelector("span").classList.add("hidden");
+            element.querySelector("span").classList.add("hidden");
           });
         })();
 
         pInput.parentElement.appendChild(newP);
         pInput.remove();
+
+        Save(project)
       }
     });
   }
 
-  const Save = () =>
+  const Save = (project) =>
   {
-    
+    const _infoBoxes = _.without([...document.querySelectorAll(".info-box")], document.querySelector("#checklist-header"), ...document.querySelectorAll(".checklist"));
+    for (let i = 0; i < _infoBoxes.length; i++)
+    {
+      project[_infoBoxes[i].id] = _infoBoxes[i].querySelector("p").firstChild.textContent;
+      if (_infoBoxes[i].id == "dueDate") project[_infoBoxes[i].id] = parse(_infoBoxes[i].querySelector("p").firstChild.textContent, "dd/M/yyyy", new Date());
+    }
+
+    (() =>
+    {
+      const projectDOM = document.querySelector(`[data-index="${projects.indexOf(project)}"]`);
+      const header = projectDOM.children[0];
+      const remainingDays = projectDOM.children[1];
+      const progressBar = projectDOM.children[2];
+
+      header.textContent = project.name;
+      remainingDays.textContent = `Remaining Days: ${differenceInDays(project.dueDate, new Date())}`; 
+    })();
   }
 
   const Create = (project) =>
@@ -131,12 +150,11 @@ const InfoBox = (() =>
       (() =>
       {
         const _properties = ["name", "description", "dueDate", "priority"];
-        console.log("s");
         for (let i = 0; i < _properties.length; i++)
         {
           let div = document.createElement("div");
           div.classList.add("info-box");
-          div.id = `info-${_properties[i]}`
+          div.id = _properties[i];
 
           const h1 = document.createElement("h1");
           h1.textContent = _properties[i];
@@ -150,7 +168,7 @@ const InfoBox = (() =>
           icon.classList.add("material-icons", "hidden");
           icon.textContent = "edit";
           p.appendChild(icon);
-          icon.addEventListener("click", () => Edit(p));
+          icon.addEventListener("click", () => Edit(p, project));
 
           (() =>
           {
