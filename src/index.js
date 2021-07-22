@@ -224,6 +224,10 @@ const InfoBox = (() =>
             const input = document.createElement("input");
             input.type = "checkbox";
             input.checked = project.checklist[i].checked;
+            input.addEventListener("change", () =>
+            {
+              project.checklist[i].checked = input.checked;
+            });
             div.appendChild(input);
 
             sideInfo.appendChild(div);
@@ -267,7 +271,6 @@ const InfoBox = (() =>
         p.querySelector("span").classList.add("hidden");
       });
     })();
-
   }
 
   return { Create, Close }
