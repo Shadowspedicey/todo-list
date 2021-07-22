@@ -69,46 +69,66 @@ const Interface = (() =>
 
 const InfoBox = (() =>
 {
+  const _priorities = ["Low", "Medium", "High"];
+
   const Edit = (element, project) =>
   {
     //TODO Date and priority edit
     element.querySelector("span").remove();
-    const pInput = document.createElement("input");
-    pInput.type = "text";
-    pInput.value = element.textContent;
+    let pInput = document.createElement("input");
+    switch (element.parentElement.id)
+    {
+      case "name":
+      case "description":
+        pInput.type = "text";
+        pInput.value = element.textContent;
+        break;
+
+      case "dueDate":
+        pInput.type = "date";
+        pInput.value = format(project.dueDate, "yyyy-MM-dd");
+        pInput.min = format(new Date(), "yyyy-MM-dd");
+        break;
+
+      case "priority":
+        pInput = document.createElement("select");
+        _priorities.forEach(_priority =>
+          {
+            const option = document.createElement("option");
+            option.value = _priority;
+            option.textContent = _priority;
+
+            pInput.appendChild(option);
+          });
+        pInput.value = element.textContent;
+        break;
+    }
     element.parentElement.appendChild(pInput);
     element.remove();
 
+    //Creates the p element and fills it with the value of the input and appends it while creating and edit button
+    const ConfirmChanges = () =>
+    {
+      const newP = document.createElement("p");
+      newP.textContent = pInput.value;
+      if (pInput.parentElement.id === "dueDate") newP.textContent = format(parse(pInput.value, "yyyy-MM-dd", new Date()), "dd/MM/yyyy");
+
+      CreateEditButton(newP, project);
+
+      pInput.parentElement.appendChild(newP);
+      pInput.remove();
+
+      Save(project)
+    }
+
+    if (pInput.parentElement.id === "dueDate" || pInput.parentElement.id === "priority") return pInput.addEventListener("change", () => ConfirmChanges());
+
+    //Checks for enter key to confirm changes to info box
     pInput.addEventListener("keyup", (e) =>
     {
       if (e.keyCode === 13)
       {
-        const newP = document.createElement("p");
-        newP.textContent = pInput.value;
-
-        const icon = document.createElement("span");
-        icon.classList.add("material-icons", "hidden");
-        icon.textContent = "edit";
-        element.appendChild(icon);
-        icon.addEventListener("click", () => Edit(element));
-
-        (() =>
-        {
-          element.addEventListener("mouseover", () =>
-          {
-            element.querySelector("span").classList.remove("hidden");
-          });
-
-          element.addEventListener("mouseout", () =>
-          {
-            element.querySelector("span").classList.add("hidden");
-          });
-        })();
-
-        pInput.parentElement.appendChild(newP);
-        pInput.remove();
-
-        Save(project)
+        ConfirmChanges();
       }
     });
   }
@@ -119,7 +139,7 @@ const InfoBox = (() =>
     for (let i = 0; i < _infoBoxes.length; i++)
     {
       project[_infoBoxes[i].id] = _infoBoxes[i].querySelector("p").firstChild.textContent;
-      if (_infoBoxes[i].id == "dueDate") project[_infoBoxes[i].id] = parse(_infoBoxes[i].querySelector("p").firstChild.textContent, "dd/M/yyyy", new Date());
+      if (_infoBoxes[i].id == "dueDate") project[_infoBoxes[i].id] = parse(_infoBoxes[i].querySelector("p").firstChild.textContent, "dd/MM/yyyy", new Date());
     }
 
     (() =>
@@ -147,6 +167,7 @@ const InfoBox = (() =>
       const mainInfo = document.createElement("div");
       mainInfo.id = "main-info";
 
+      //Creates the info fields through a loop
       (() =>
       {
         const _properties = ["name", "description", "dueDate", "priority"];
@@ -164,24 +185,7 @@ const InfoBox = (() =>
           p.textContent = project[_properties[i]];
           if (_properties[i] === "dueDate") p.textContent = format(project.dueDate, "dd/MM/yyyy");
 
-          const icon = document.createElement("span");
-          icon.classList.add("material-icons", "hidden");
-          icon.textContent = "edit";
-          p.appendChild(icon);
-          icon.addEventListener("click", () => Edit(p, project));
-
-          (() =>
-          {
-            p.addEventListener("mouseover", () =>
-            {
-              p.querySelector("span").classList.remove("hidden");
-            });
-
-            p.addEventListener("mouseout", () =>
-            {
-              p.querySelector("span").classList.add("hidden");
-            });
-          })();
+          CreateEditButton(p, project);
 
           div.appendChild(p);
 
@@ -190,6 +194,7 @@ const InfoBox = (() =>
       })();
       infoBox.appendChild(mainInfo);
 
+      //Creates the side info div and appends every checklist obj in project
       (() =>
       {
         const sideInfo = document.createElement("div");
@@ -235,13 +240,43 @@ const InfoBox = (() =>
     })();
   }
 
-  return { Create }
+  const Close = () =>
+  {
+    document.querySelector("#info-container").remove();
+  }
+
+  //Create the edit button and adds event listeners to icon parent and passed the project
+  const CreateEditButton = (p, project) =>
+  {
+    const icon = document.createElement("span");
+    icon.classList.add("material-icons", "hidden");
+    icon.textContent = "edit";
+    p.appendChild(icon);
+    icon.addEventListener("click", () => Edit(p, project));
+
+    (() =>
+    {
+      console.log(p);
+      p.addEventListener("mouseover", () =>
+      {
+        p.querySelector("span").classList.remove("hidden");
+      });
+
+      p.addEventListener("mouseout", () =>
+      {
+        p.querySelector("span").classList.add("hidden");
+      });
+    })();
+
+  }
+
+  return { Create, Close }
 })();
 
 (() =>
 {
   window.addEventListener("click", (e) => 
   {
-    if (e.target.id === "info-container") e.target.remove();
+    if (e.target.id === "info-container") InfoBox.Close();
   });
 })();
