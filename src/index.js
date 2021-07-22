@@ -16,7 +16,7 @@ const Project = function(name, description, dueDate, priority, notes, checklist)
   projects.push(obj);
   return obj;
 }
-Project("Hello", "s", new Date(2021, 7 - 1, 24), "Medium", "", [Checklist("Intro", false)]);
+Project("Hello", "s", new Date(2021, 7 - 1, 24), "Medium", "", [Checklist("Intro", false), Checklist("Buildup", false)]);
 Project("Hey", "s", new Date());
 
 const Interface = (() =>
@@ -69,6 +69,47 @@ const Interface = (() =>
 
 const InfoBox = (() =>
 {
+  const Edit = (p) =>
+  {
+    p.querySelector("span").remove();
+    const pInput = document.createElement("input");
+    pInput.type = "text";
+    pInput.value = p.textContent;
+    p.parentElement.appendChild(pInput);
+    p.remove();
+
+    pInput.addEventListener("keyup", (e) =>
+    {
+      if (e.keyCode === 13)
+      {
+        const newP = document.createElement("p");
+        newP.textContent = pInput.value;
+
+        const icon = document.createElement("span");
+        icon.classList.add("material-icons", "hidden");
+        icon.textContent = "edit";
+        p.appendChild(icon);
+        icon.addEventListener("click", () => Edit(p));
+
+        (() =>
+        {
+          p.addEventListener("mouseover", () =>
+          {
+            p.querySelector("span").classList.remove("hidden");
+          });
+
+          p.addEventListener("mouseout", () =>
+          {
+            p.querySelector("span").classList.add("hidden");
+          });
+        })();
+
+        pInput.parentElement.appendChild(newP);
+        pInput.remove();
+      }
+    });
+  }
+
   const Create = (project) =>
   {
     (() =>
@@ -99,6 +140,26 @@ const InfoBox = (() =>
           const p = document.createElement("p");
           p.textContent = project[_properties[i]];
           if (_properties[i] === "dueDate") p.textContent = format(project.dueDate, "dd/MM/yyyy");
+
+          const icon = document.createElement("span");
+          icon.classList.add("material-icons", "hidden");
+          icon.textContent = "edit";
+          p.appendChild(icon);
+          icon.addEventListener("click", () => Edit(p));
+
+          (() =>
+          {
+            p.addEventListener("mouseover", () =>
+            {
+              p.querySelector("span").classList.remove("hidden");
+            });
+
+            p.addEventListener("mouseout", () =>
+            {
+              p.querySelector("span").classList.add("hidden");
+            });
+          })();
+
           div.appendChild(p);
 
           mainInfo.appendChild(div);
@@ -152,4 +213,12 @@ const InfoBox = (() =>
   }
 
   return { Create }
+})();
+
+(() =>
+{
+  window.addEventListener("click", (e) => 
+  {
+    if (e.target.id === "info-container") e.target.remove();
+  });
 })();

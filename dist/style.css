@@ -4,6 +4,12 @@ html, body
   margin: 0;
 }
 
+.hidden
+{
+  opacity: 0;
+  pointer-events: none;
+}
+
 #content
 {
   width: 100%;
@@ -136,8 +142,14 @@ html, body
   margin: 3rem 3rem 0 3rem;
 }
 
+.info-box h1, p
+{
+  width: min-content;
+}
+
 .info-box h1
 {
+  width: min-content;
   font-size: 3em;
   font-family: "Big Noodle Titling";
   font-weight: 575;
@@ -151,7 +163,28 @@ html, body
   font-size: 2em;
   font-family: "Alegreya";
 
+  display: flex;
+  align-items: center;
+
   margin: 0;
+}
+
+.info-box span
+{
+  cursor: pointer;
+
+  margin: 0.5rem;
+}
+
+.info-box input[type=text]
+{
+  background: transparent;
+
+  font-size: 2em;
+  font-family: "Alegreya";
+
+  outline: none;
+  border: none;
 }
 
 #side-info
