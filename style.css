@@ -176,7 +176,7 @@ html, body
   margin: 0.5rem;
 }
 
-.info-box input[type=text]
+.info-box input[type=text], input[type=date], select
 {
   background: transparent;
 
@@ -185,6 +185,11 @@ html, body
 
   outline: none;
   border: none;
+}
+.info-box input[type=date]
+{
+  font-size: 2.25em;
+  font-family: "Alegreya";
 }
 
 #side-info
