@@ -50,6 +50,8 @@ html, body
   align-items: center;
   justify-content: space-evenly;
 
+  position: relative;
+
   box-shadow: 0 0 20px 5px gray;
 }
 .project h2
@@ -59,6 +61,21 @@ html, body
 .project:hover
 {
   transform: scale(1.125);
+}
+.project > .material-icons
+{
+  transform: scale(0.8);
+  cursor: pointer;
+
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+
+  border: 1px solid black;
+}
+.project > .material-icons:hover
+{
+  background-color: rgb(238, 238, 238);
 }
 
 .progress-bar
@@ -128,7 +145,7 @@ html, body
   z-index: 99;
 }
 
-#info-box > span
+#info-box > span, .project > .material-icons
 {
   cursor: pointer;
 
