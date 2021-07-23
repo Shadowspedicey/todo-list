@@ -12,6 +12,7 @@ const Checklist = (name, checked) =>
 const Project = function(name, description, dueDate, priority, checklist)
 {
   const progress = 0;
+  const defaultProject = true;
 
   const AddChecklistToArray = () =>
   {
@@ -20,10 +21,11 @@ const Project = function(name, description, dueDate, priority, checklist)
     return _check;
   };
 
-  const obj = { name, description, dueDate, priority, checklist, progress, AddChecklistToArray };
+  const obj = { name, description, dueDate, priority, checklist, progress, defaultProject, AddChecklistToArray };
   projects.push(obj);
   return obj;
 }
+Project("SDFAD", "DASDAS", new Date(), "Low", []);
 
 const Interface = (() =>
 {
@@ -52,6 +54,20 @@ const Interface = (() =>
     progressSpan.id = "bar";
     progressBar.appendChild(progressSpan);
     projectDOM.appendChild(progressBar);
+
+    (() =>
+    {
+      const close = document.createElement("span");
+      close.classList.add("material-icons", "hidden")
+      close.textContent = "close";
+
+      close.addEventListener("click", (e) => DeleteProject(e));
+
+      projectDOM.appendChild(close);
+
+      projectDOM.addEventListener("mouseover", () => close.classList.remove("hidden"));
+      projectDOM.addEventListener("mouseout", () => close.classList.add("hidden"));
+    })()
 
     _projectsDiv.insertBefore(projectDOM, document.querySelector("#add"));
 
@@ -89,7 +105,7 @@ const Interface = (() =>
 
     remainingDays.textContent = `Remaining Days: ${differenceInDays(project.dueDate, new Date())}`;
 
-    progressBar.firstChild.textContent = `${Math.round(project.progress)}%`;
+    progressBar.firstChild.textContent = `${+Math.round(project.progress)}%`;
     progressBar.querySelector("#bar").style.width = `${project.progress}%`;
     switch (project.priority)
     {
@@ -110,8 +126,30 @@ const Interface = (() =>
 
   const AddProject = () =>
   {
-    Project("Name", "", new Date(), "Low", []);
+    let name;
+    const nameArrayLength = _.filter(projects, project => project.name.includes("Name") && project.defaultProject === true).length;
+    //checks if object with name "Name" exists if it does create object with name of "Name" plus length if names array
+    if (nameArrayLength === 0) name = "Name";
+    else name = `Name${nameArrayLength}`;
+
+    Project(name, "", new Date(), "Low", []);
     PrintArrayToDOM();
+  }
+
+  const DeleteProject = (e) =>
+  {
+    e.stopPropagation();
+    e.target.parentElement.remove();
+    projects.splice(e.target.parentElement.dataset.index, 1);
+    SyncIndexes();
+    //localStorage.setItem("books", JSON.stringify(books));
+  }
+
+  const SyncIndexes = () =>
+  {
+    //gets the projects DOM and loops through them assigning the index dataset by name
+    const _projectsDOM = _.without([...document.querySelectorAll(".project")], document.querySelector("#add"));
+    _projectsDOM.forEach(_project => _project.dataset.index = projects.indexOf(_.find(projects, project => project.name === _project.firstChild.textContent)));
   }
 
   //Adds even listener on the add project button
@@ -243,7 +281,8 @@ const InfoBox = (() =>
 
   const Edit = (element, project) =>
   {
-    //TODO Date and priority edit
+    project.defaultProject = false;
+
     element.querySelector("span").remove();
     let pInput = document.createElement("input");
     switch (element.parentElement.id)
@@ -340,6 +379,7 @@ const InfoBox = (() =>
     //Calculates progress and saves it
     (() =>
     {
+      if (project.checklist.length === 0) return;
       let _checkedTemp = _.filter(project.checklist, (_check) => _check.checked);
       project.progress = (_checkedTemp.length / project.checklist.length) * 100;
     })();
