@@ -24,8 +24,6 @@ const Project = function(name, description, dueDate, priority, checklist)
   projects.push(obj);
   return obj;
 }
-Project("Hello", "s", new Date(2021, 7 - 1, 25), "Medium", [Checklist("Intro", false), Checklist("Buildup", false), Checklist("Transition", false)]);
-Project("Hey", "s", new Date());
 
 const Interface = (() =>
 {
@@ -56,15 +54,29 @@ const Interface = (() =>
     projectDOM.appendChild(progressBar);
 
     _projectsDiv.insertBefore(projectDOM, document.querySelector("#add"));
+
+    projectDOM.addEventListener("click", () => InfoBox.Create(project));
   }
 
-  const PrintArrayToDOM = (() =>
+  const PrintArrayToDOM = () =>
   {
+    const _projectsDOM = _.without([...document.querySelectorAll(".project")], document.querySelector("#add"));
     projects.forEach(_project =>
       {
+        let doesProjectExist = () =>
+        {
+          for (let i = 0; i < _projectsDOM.length; i++)
+          {
+            if (_projectsDOM[i].dataset.index == projects.indexOf(_project)) return true;
+          }
+          return false;
+        }
+        if (doesProjectExist()) return;
+
         OutputProjectToDOM(_project);
       });
-  })();
+  }
+  PrintArrayToDOM();
 
   const SaveChangesToDOM = (project) =>
   {
@@ -96,13 +108,17 @@ const Interface = (() =>
     }
   }
 
+  const AddProject = () =>
+  {
+    Project("Name", "", new Date(), "Low", []);
+    PrintArrayToDOM();
+  }
+
+  //Adds even listener on the add project button
   (() =>
   {
-    const _projects = _.without([...document.querySelectorAll(".project")], document.querySelector("#add"));
-    _projects.forEach(_project =>
-      {
-        _project.addEventListener("click", () => InfoBox.Create(projects[_project.dataset.index]));
-      });
+    const projectAdd = document.querySelector("#add");
+    projectAdd.addEventListener("click", () => AddProject());
   })();
 
   return { OutputProjectToDOM, SaveChangesToDOM }
