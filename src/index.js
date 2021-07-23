@@ -336,18 +336,16 @@ const InfoBox = (() =>
       else pInput.parentElement.appendChild(newP);
       pInput.remove();
 
-      Save(project)
+      CreateSaveButton(project);
     }
 
     if (pInput.parentElement.id === "dueDate" || pInput.parentElement.id === "priority") return pInput.addEventListener("change", () => ConfirmChanges());
 
+
     //Checks for enter key to confirm changes to info box
     pInput.addEventListener("keyup", (e) =>
     {
-      if (e.keyCode === 13)
-      {
-        ConfirmChanges();
-      }
+      if (e.keyCode === 13) ConfirmChanges();
     });
   }
 
@@ -404,15 +402,8 @@ const InfoBox = (() =>
 
     (() =>
     {
-      p.addEventListener("mouseover", () =>
-      {
-        p.querySelector("span").classList.remove("hidden");
-      });
-
-      p.addEventListener("mouseout", () =>
-      {
-        p.querySelector("span").classList.add("hidden");
-      });
+      p.addEventListener("mouseover", () => p.querySelector("span").classList.remove("hidden"));
+      p.addEventListener("mouseout", () => p.querySelector("span").classList.add("hidden"));
     })();
   };
 
@@ -438,12 +429,27 @@ const InfoBox = (() =>
     input.addEventListener("change", () =>
     {
       _checked.checked = input.checked;
-      Save(project);
+      Save();
     });
     div.appendChild(input);
 
     document.querySelector("#side-info").insertBefore(div, document.querySelector("#checklist-add"));
   };
+
+  const CreateSaveButton = project =>
+  {
+    if (document.querySelector("#save")) return;
+    const saveButton = document.createElement("div");
+    saveButton.id = "save";
+    saveButton.textContent = "Save";
+    saveButton.addEventListener("click", () => 
+    {
+      Save(project);
+      saveButton.remove();
+    });
+
+    document.querySelector("#main-info").appendChild(saveButton);
+  }
 
   return { Create, Close }
 })();

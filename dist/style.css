@@ -67,6 +67,8 @@ html, body
   transform: scale(0.8);
   cursor: pointer;
 
+  font-size: 1.5rem;
+
   position: absolute;
   top: 1rem;
   right: 1rem;
@@ -145,9 +147,11 @@ html, body
   z-index: 99;
 }
 
-#info-box > span, .project > .material-icons
+#info-box > span
 {
   cursor: pointer;
+
+  font-size: 1.5rem;
 
   position: absolute;
   top: 1rem;
@@ -170,7 +174,6 @@ html, body
 
   position: relative;
 }
-
 #main-info::after
 {
   content: "";
@@ -187,6 +190,26 @@ html, body
 
   position: absolute;
   right: 0;
+}
+
+#save:hover
+{
+  background-color: rgba(182, 182, 182, 0.2);
+}
+#save
+{
+  cursor: pointer;
+
+  font-size: 2.5em;
+  font-family: "Alegreya";
+  user-select: none;
+
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+
+  border-top: 1px solid rgba(0, 0, 0, 0.4);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.4);
 }
 
 .info-box
@@ -323,4 +346,12 @@ html, body
 @font-face {
   font-family: "Big Noodle Titling";
   src: url(./fonts/big_noodle_titling.ttf);
+}
+
+@media (max-width: 1000px)
+{
+  html
+  {
+    font-size: 32px;
+  }
 }
