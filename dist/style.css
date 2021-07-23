@@ -78,7 +78,6 @@ html, body
 {
   content: "";
 
-  background: red;
   height: 100%;
 
   position: absolute;
@@ -234,6 +233,8 @@ html, body
 {
   height: 100%;
   width: 20%;
+
+  overflow: auto;
 }
 
 #checklist-header h1
@@ -251,6 +252,11 @@ html, body
   align-items: center;
 
   margin-left: 0rem;
+}
+
+.checklist input[type=text]
+{
+  width: 100%;
 }
 
 .checklist input[type=checkbox]

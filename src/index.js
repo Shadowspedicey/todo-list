@@ -9,15 +9,22 @@ const Checklist = (name, checked) =>
   return {name, checked};
 }
 
-const Project = function(name, description, dueDate, priority, notes, checklist)
+const Project = function(name, description, dueDate, priority, checklist)
 {
   const progress = 0;
-  const obj = { name, description, dueDate, priority, notes, checklist, progress };
 
+  const AddChecklistToArray = () =>
+  {
+    let _check = Checklist("Name", false);
+    checklist.push(_check);
+    return _check;
+  };
+
+  const obj = { name, description, dueDate, priority, checklist, progress, AddChecklistToArray };
   projects.push(obj);
   return obj;
 }
-Project("Hello", "s", new Date(2021, 7 - 1, 25), "Medium", "", [Checklist("Intro", false), Checklist("Buildup", false), Checklist("Transition", false)]);
+Project("Hello", "s", new Date(2021, 7 - 1, 25), "Medium", [Checklist("Intro", false), Checklist("Buildup", false), Checklist("Transition", false)]);
 Project("Hey", "s", new Date());
 
 const Interface = (() =>
@@ -59,6 +66,36 @@ const Interface = (() =>
       });
   })();
 
+  const SaveChangesToDOM = (project) =>
+  {
+    const projectDOM = document.querySelector(`[data-index="${projects.indexOf(project)}"]`);
+    const header = projectDOM.children[0];
+    const remainingDays = projectDOM.children[1];
+    const progressBar = projectDOM.children[2];
+
+    header.textContent = project.name;
+
+    remainingDays.textContent = `Remaining Days: ${differenceInDays(project.dueDate, new Date())}`;
+
+    progressBar.firstChild.textContent = `${Math.round(project.progress)}%`;
+    progressBar.querySelector("#bar").style.width = `${project.progress}%`;
+    switch (project.priority)
+    {
+      case "Low":
+        console.log("a");
+        progressBar.querySelector("#bar").style.background = "green";
+        break;
+
+      case "Medium":
+        progressBar.querySelector("#bar").style.background = "yellow";
+        break;
+
+      case "High":
+        progressBar.querySelector("#bar").style.background = "red";
+        break;
+    }
+  }
+
   (() =>
   {
     const _projects = _.without([...document.querySelectorAll(".project")], document.querySelector("#add"));
@@ -68,7 +105,7 @@ const Interface = (() =>
       });
   })();
 
-  return { OutputProjectToDOM }
+  return { OutputProjectToDOM, SaveChangesToDOM }
 })();
 
 const InfoBox = (() =>
@@ -134,6 +171,7 @@ const InfoBox = (() =>
         const addDiv = document.createElement("div");
         addDiv.id = "checklist-add";
         addDiv.textContent = "+";
+        addDiv.addEventListener("click", () => CreateChecklistItem(project));
         sideInfo.appendChild(addDiv);
 
         //Adds the checklist
@@ -148,24 +186,7 @@ const InfoBox = (() =>
             const p = document.createElement("p");
             p.textContent = project.checklist[i].name;
             
-            const icon = document.createElement("span");
-            icon.classList.add("material-icons", "hidden");
-            icon.textContent = "edit";
-            p.insertBefore(icon, p.firstChild);
-            icon.addEventListener("click", () => Edit(p, project));
-        
-            (() =>
-            {
-              p.addEventListener("mouseover", () =>
-              {
-                p.querySelector("span").classList.remove("hidden");
-              });
-        
-              p.addEventListener("mouseout", () =>
-              {
-                p.querySelector("span").classList.add("hidden");
-              });
-            })();        
+            CreateEditButton(p, project, true);
 
             div.appendChild(p);
 
@@ -242,7 +263,8 @@ const InfoBox = (() =>
         pInput.value = element.lastChild.textContent;
         break;
     }
-    element.parentElement.appendChild(pInput);
+    if (element.parentElement.classList.contains("checklist")) element.parentElement.insertBefore(pInput, element.parentElement.firstChild);
+    else element.parentElement.appendChild(pInput);
     element.remove();
 
     //Creates the p element and fills it with the value of the input and appends it while creating and edit button
@@ -307,18 +329,7 @@ const InfoBox = (() =>
     })();
 
     //Changes the info on the project DOM accordingly
-    (() =>
-    {
-      const projectDOM = document.querySelector(`[data-index="${projects.indexOf(project)}"]`);
-      const header = projectDOM.children[0];
-      const remainingDays = projectDOM.children[1];
-      const progressBar = projectDOM.children[2];
-
-      header.textContent = project.name;
-      remainingDays.textContent = `Remaining Days: ${differenceInDays(project.dueDate, new Date())}`;
-      progressBar.firstChild.textContent = `${Math.round(project.progress)}%`;
-      progressBar.querySelector("#bar").style.width = `${project.progress}%`;
-    })();
+    Interface.SaveChangesToDOM(project);
   }
 
   const Close = () =>
@@ -347,7 +358,36 @@ const InfoBox = (() =>
         p.querySelector("span").classList.add("hidden");
       });
     })();
-  }
+  };
+
+  //Creats a checklist item and appends it to side info
+  const CreateChecklistItem = (project) =>
+  {
+    let _check = project.AddChecklistToArray();
+
+    const div = document.createElement("div");
+    div.classList.add("info-box", "checklist");
+    div.dataset.index = project.checklist.indexOf(_check);
+
+    const p = document.createElement("p");
+    p.textContent = _check.name;
+    
+    CreateEditButton(p, project, true);
+
+    div.appendChild(p);
+
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.checked = _check.checked;
+    input.addEventListener("change", () =>
+    {
+      _checked.checked = input.checked;
+      Save(project);
+    });
+    div.appendChild(input);
+
+    document.querySelector("#side-info").insertBefore(div, document.querySelector("#checklist-add"));
+  };
 
   return { Create, Close }
 })();
