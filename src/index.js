@@ -75,98 +75,6 @@ const InfoBox = (() =>
 {
   const _priorities = ["Low", "Medium", "High"];
 
-  const Edit = (element, project) =>
-  {
-    //TODO Date and priority edit
-    element.querySelector("span").remove();
-    let pInput = document.createElement("input");
-    switch (element.parentElement.id)
-    {
-      case "name":
-      case "description":
-        pInput.type = "text";
-        pInput.value = element.textContent;
-        break;
-
-      case "dueDate":
-        pInput.type = "date";
-        pInput.value = format(project.dueDate, "yyyy-MM-dd");
-        pInput.min = format(new Date(), "yyyy-MM-dd");
-        break;
-
-      case "priority":
-        pInput = document.createElement("select");
-        _priorities.forEach(_priority =>
-          {
-            const option = document.createElement("option");
-            option.value = _priority;
-            option.textContent = _priority;
-
-            pInput.appendChild(option);
-          });
-        pInput.value = element.textContent;
-        break;
-    }
-    element.parentElement.appendChild(pInput);
-    element.remove();
-
-    //Creates the p element and fills it with the value of the input and appends it while creating and edit button
-    const ConfirmChanges = () =>
-    {
-      const newP = document.createElement("p");
-      newP.textContent = pInput.value;
-      if (pInput.parentElement.id === "dueDate") newP.textContent = format(parse(pInput.value, "yyyy-MM-dd", new Date()), "dd/MM/yyyy");
-
-      CreateEditButton(newP, project);
-
-      pInput.parentElement.appendChild(newP);
-      pInput.remove();
-
-      Save(project)
-    }
-
-    if (pInput.parentElement.id === "dueDate" || pInput.parentElement.id === "priority") return pInput.addEventListener("change", () => ConfirmChanges());
-
-    //Checks for enter key to confirm changes to info box
-    pInput.addEventListener("keyup", (e) =>
-    {
-      if (e.keyCode === 13)
-      {
-        ConfirmChanges();
-      }
-    });
-  }
-
-  const Save = (project) =>
-  {
-    const _infoBoxes = _.without([...document.querySelectorAll(".info-box")], document.querySelector("#checklist-header"), ...document.querySelectorAll(".checklist"));
-    for (let i = 0; i < _infoBoxes.length; i++)
-    {
-      project[_infoBoxes[i].id] = _infoBoxes[i].querySelector("p").firstChild.textContent;
-      if (_infoBoxes[i].id == "dueDate") project[_infoBoxes[i].id] = parse(_infoBoxes[i].querySelector("p").firstChild.textContent, "dd/MM/yyyy", new Date());
-    };
-    
-    //Calculates progress and saves it
-    (() =>
-    {
-      let _checkedTemp = _.filter(project.checklist, (_check) => _check.checked);
-      project.progress = (_checkedTemp.length / project.checklist.length) * 100;
-    })();
-
-    (() =>
-    {
-      const projectDOM = document.querySelector(`[data-index="${projects.indexOf(project)}"]`);
-      const header = projectDOM.children[0];
-      const remainingDays = projectDOM.children[1];
-      const progressBar = projectDOM.children[2];
-
-      header.textContent = project.name;
-      remainingDays.textContent = `Remaining Days: ${differenceInDays(project.dueDate, new Date())}`;
-      progressBar.firstChild.textContent = `${Math.round(project.progress)}%`;
-      progressBar.querySelector("#bar").style.width = `${project.progress}%`;
-    })();
-  }
-
   const Create = (project) =>
   {
     (() =>
@@ -198,7 +106,7 @@ const InfoBox = (() =>
           p.textContent = project[_properties[i]];
           if (_properties[i] === "dueDate") p.textContent = format(project.dueDate, "dd/MM/yyyy");
 
-          CreateEditButton(p, project);
+          CreateEditButton(p, project, false);
 
           div.appendChild(p);
 
@@ -216,12 +124,17 @@ const InfoBox = (() =>
         const header = document.createElement("div");
         header.classList.add("info-box");
         header.id = "checklist-header";
-        header.style.textAlign = "center";
 
         const h1 = document.createElement("h1");
         h1.textContent = "Checklist";
         header.appendChild(h1);
         sideInfo.appendChild(header);
+
+        //Adds the add checklist button
+        const addDiv = document.createElement("div");
+        addDiv.id = "checklist-add";
+        addDiv.textContent = "+";
+        sideInfo.appendChild(addDiv);
 
         //Adds the checklist
         (() =>
@@ -230,9 +143,30 @@ const InfoBox = (() =>
           {
             const div = document.createElement("div");
             div.classList.add("info-box", "checklist");
+            div.dataset.index = i;
 
             const p = document.createElement("p");
             p.textContent = project.checklist[i].name;
+            
+            const icon = document.createElement("span");
+            icon.classList.add("material-icons", "hidden");
+            icon.textContent = "edit";
+            p.insertBefore(icon, p.firstChild);
+            icon.addEventListener("click", () => Edit(p, project));
+        
+            (() =>
+            {
+              p.addEventListener("mouseover", () =>
+              {
+                p.querySelector("span").classList.remove("hidden");
+              });
+        
+              p.addEventListener("mouseout", () =>
+              {
+                p.querySelector("span").classList.add("hidden");
+              });
+            })();        
+
             div.appendChild(p);
 
             const input = document.createElement("input");
@@ -245,7 +179,7 @@ const InfoBox = (() =>
             });
             div.appendChild(input);
 
-            sideInfo.appendChild(div);
+            sideInfo.insertBefore(div, addDiv);
           }
         })()
 
@@ -270,18 +204,135 @@ const InfoBox = (() =>
     })();
   }
 
+  const Edit = (element, project) =>
+  {
+    //TODO Date and priority edit
+    element.querySelector("span").remove();
+    let pInput = document.createElement("input");
+    switch (element.parentElement.id)
+    {
+      case "name":
+      case "description":
+        pInput.type = "text";
+        pInput.value = element.textContent;
+        break;
+
+      case "dueDate":
+        pInput.type = "date";
+        pInput.value = format(project.dueDate, "yyyy-MM-dd");
+        pInput.min = format(new Date(), "yyyy-MM-dd");
+        break;
+
+      case "priority":
+        pInput = document.createElement("select");
+        _priorities.forEach(_priority =>
+          {
+            const option = document.createElement("option");
+            option.value = _priority;
+            option.textContent = _priority;
+
+            pInput.appendChild(option);
+          });
+        pInput.value = element.textContent;
+        break;
+
+      //Fallback to be able to edit checklist
+      default:
+        pInput.type = "text";
+        pInput.value = element.lastChild.textContent;
+        break;
+    }
+    element.parentElement.appendChild(pInput);
+    element.remove();
+
+    //Creates the p element and fills it with the value of the input and appends it while creating and edit button
+    const ConfirmChanges = () =>
+    {
+      const newP = document.createElement("p");
+      newP.textContent = pInput.value;
+      if (pInput.parentElement.id === "dueDate") newP.textContent = format(parse(pInput.value, "yyyy-MM-dd", new Date()), "dd/MM/yyyy");
+
+      if (pInput.parentElement.classList.contains("checklist")) CreateEditButton(newP, project, true)
+      else CreateEditButton(newP, project, false);
+
+      if (pInput.parentElement.classList.contains("checklist")) pInput.parentElement.insertBefore(newP, pInput.parentElement.firstChild);
+      else pInput.parentElement.appendChild(newP);
+      pInput.remove();
+
+      Save(project)
+    }
+
+    if (pInput.parentElement.id === "dueDate" || pInput.parentElement.id === "priority") return pInput.addEventListener("change", () => ConfirmChanges());
+
+    //Checks for enter key to confirm changes to info box
+    pInput.addEventListener("keyup", (e) =>
+    {
+      if (e.keyCode === 13)
+      {
+        ConfirmChanges();
+      }
+    });
+  }
+
+  const Save = (project) =>
+  {
+    //Saves info fields and date
+    (() =>
+    {
+      const _infoBoxes = _.without([...document.querySelectorAll(".info-box")], document.querySelector("#checklist-header"), ...document.querySelectorAll(".checklist"));
+      for (let i = 0; i < _infoBoxes.length; i++)
+      {
+        project[_infoBoxes[i].id] = _infoBoxes[i].querySelector("p").firstChild.textContent;
+        if (_infoBoxes[i].id == "dueDate") project[_infoBoxes[i].id] = parse(_infoBoxes[i].querySelector("p").firstChild.textContent, "dd/MM/yyyy", new Date());
+      };  
+    })();
+
+    //Saves Checklist
+    (() =>
+    {
+      const _checklistDOM = _.without([...document.querySelectorAll(".checklist")], document.querySelector("#checklist-header"));
+      for (let i = 0; i < _checklistDOM.length; i++)
+      {
+        let _element = _.find(_checklistDOM, element => element.dataset.index == i);
+        console.log(_element);
+        project.checklist[i].name = _element.querySelector("p").lastChild.textContent;
+      }
+    })();
+    
+    //Calculates progress and saves it
+    (() =>
+    {
+      let _checkedTemp = _.filter(project.checklist, (_check) => _check.checked);
+      project.progress = (_checkedTemp.length / project.checklist.length) * 100;
+    })();
+
+    //Changes the info on the project DOM accordingly
+    (() =>
+    {
+      const projectDOM = document.querySelector(`[data-index="${projects.indexOf(project)}"]`);
+      const header = projectDOM.children[0];
+      const remainingDays = projectDOM.children[1];
+      const progressBar = projectDOM.children[2];
+
+      header.textContent = project.name;
+      remainingDays.textContent = `Remaining Days: ${differenceInDays(project.dueDate, new Date())}`;
+      progressBar.firstChild.textContent = `${Math.round(project.progress)}%`;
+      progressBar.querySelector("#bar").style.width = `${project.progress}%`;
+    })();
+  }
+
   const Close = () =>
   {
     document.querySelector("#info-container").remove();
   }
 
   //Create the edit button and adds event listeners to icon parent and passed the project
-  const CreateEditButton = (p, project) =>
+  const CreateEditButton = (p, project, before) =>
   {
     const icon = document.createElement("span");
     icon.classList.add("material-icons", "hidden");
     icon.textContent = "edit";
-    p.appendChild(icon);
+    before ? p.insertBefore(icon, p.firstChild) : p.appendChild(icon);
     icon.addEventListener("click", () => Edit(p, project));
 
     (() =>
