@@ -4,6 +4,8 @@ import arrayMove from "array-move";
 
 //localStorage.removeItem("projects");
 
+const ifPhone = () => (/Android|webOS|iPhone|iPad|Mac|Macintosh|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) ? true :  false;
+
 //Gets "projects" from localStorage and sets the date accordingly and attaches a function
 let getStoredProjects = () =>
 {
@@ -106,6 +108,7 @@ const Interface = (() =>
 
       projectDOM.appendChild(close);
 
+      if (ifPhone()) return;
       projectDOM.addEventListener("mouseover", () => close.classList.remove("hidden"));
       projectDOM.addEventListener("mouseout", () => close.classList.add("hidden"));
     })();
@@ -133,6 +136,7 @@ const Interface = (() =>
 
       projectDOM.appendChild(sortDiv);
 
+      if (ifPhone()) return;
       projectDOM.addEventListener("mouseover", () => sortDiv.classList.remove("hidden"));
       projectDOM.addEventListener("mouseout", () => sortDiv.classList.add("hidden"));
     })();
@@ -250,115 +254,112 @@ const InfoBox = (() =>
 
   const Create = (project) =>
   {
+    const infoContainer = document.createElement("div");
+    infoContainer.id = "info-container";
+
+    const infoBox = document.createElement("div");
+    infoBox.id = "info-box";
+
+    const mainInfo = document.createElement("div");
+    mainInfo.id = "main-info";
+
+    //Creates the info fields through a loop
     (() =>
     {
-      const infoContainer = document.createElement("div");
-      infoContainer.id = "info-container";
+      const _properties = ["name", "description", "dueDate", "priority"];
+      for (let i = 0; i < _properties.length; i++)
+      {
+        let div = document.createElement("div");
+        div.classList.add("info-box");
+        div.id = _properties[i];
 
-      const infoBox = document.createElement("div");
-      infoBox.id = "info-box";
+        const h1 = document.createElement("h1");
+        h1.textContent = _properties[i];
+        div.appendChild(h1);
 
-      const mainInfo = document.createElement("div");
-      mainInfo.id = "main-info";
+        const p = document.createElement("p");
+        p.textContent = project[_properties[i]];
+        if (_properties[i] === "dueDate") p.textContent = format(project.dueDate, "dd/MM/yyyy");
 
-      //Creates the info fields through a loop
+        CreateEditButton(p, project, false);
+
+        div.appendChild(p);
+
+        mainInfo.appendChild(div);
+      }
+    })();
+    infoBox.appendChild(mainInfo);
+
+    //Creates the side info div and appends every checklist obj in project
+    (() =>
+    {
+      const sideInfo = document.createElement("div");
+      sideInfo.id = "side-info";
+
+      const header = document.createElement("div");
+      header.classList.add("info-box");
+      header.id = "checklist-header";
+
+      const h1 = document.createElement("h1");
+      h1.textContent = "Checklist";
+      header.appendChild(h1);
+      sideInfo.appendChild(header);
+
+      //Adds the add checklist button
+      const addDiv = document.createElement("div");
+      addDiv.id = "checklist-add";
+      addDiv.textContent = "+";
+      addDiv.addEventListener("click", () => CreateChecklistItem(project));
+      sideInfo.appendChild(addDiv);
+
+      //Adds the checklist
       (() =>
       {
-        const _properties = ["name", "description", "dueDate", "priority"];
-        for (let i = 0; i < _properties.length; i++)
+        for (let i = 0; i < project.checklist.length; i++)
         {
-          let div = document.createElement("div");
-          div.classList.add("info-box");
-          div.id = _properties[i];
-
-          const h1 = document.createElement("h1");
-          h1.textContent = _properties[i];
-          div.appendChild(h1);
+          const div = document.createElement("div");
+          div.classList.add("info-box", "checklist");
+          div.dataset.index = i;
 
           const p = document.createElement("p");
-          p.textContent = project[_properties[i]];
-          if (_properties[i] === "dueDate") p.textContent = format(project.dueDate, "dd/MM/yyyy");
-
-          CreateEditButton(p, project, false);
+          p.textContent = project.checklist[i].name;
+          
+          CreateEditButton(p, project, true);
 
           div.appendChild(p);
 
-          mainInfo.appendChild(div);
-        }
-      })();
-      infoBox.appendChild(mainInfo);
-
-      //Creates the side info div and appends every checklist obj in project
-      (() =>
-      {
-        const sideInfo = document.createElement("div");
-        sideInfo.id = "side-info";
-
-        const header = document.createElement("div");
-        header.classList.add("info-box");
-        header.id = "checklist-header";
-
-        const h1 = document.createElement("h1");
-        h1.textContent = "Checklist";
-        header.appendChild(h1);
-        sideInfo.appendChild(header);
-
-        //Adds the add checklist button
-        const addDiv = document.createElement("div");
-        addDiv.id = "checklist-add";
-        addDiv.textContent = "+";
-        addDiv.addEventListener("click", () => CreateChecklistItem(project));
-        sideInfo.appendChild(addDiv);
-
-        //Adds the checklist
-        (() =>
-        {
-          for (let i = 0; i < project.checklist.length; i++)
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.checked = project.checklist[i].checked;
+          input.addEventListener("change", () =>
           {
-            const div = document.createElement("div");
-            div.classList.add("info-box", "checklist");
-            div.dataset.index = i;
+            project.checklist[i].checked = input.checked;
+            Save(project);
+          });
+          div.appendChild(input);
 
-            const p = document.createElement("p");
-            p.textContent = project.checklist[i].name;
-            
-            CreateEditButton(p, project, true);
-
-            div.appendChild(p);
-
-            const input = document.createElement("input");
-            input.type = "checkbox";
-            input.checked = project.checklist[i].checked;
-            input.addEventListener("change", () =>
-            {
-              project.checklist[i].checked = input.checked;
-              Save(project);
-            });
-            div.appendChild(input);
-
-            sideInfo.insertBefore(div, addDiv);
-          }
-        })()
-
-        infoBox.appendChild(sideInfo);
-      })();
-
-      //Adds close button
-      (() =>
-      {
-        const close = document.createElement("span");
-        close.classList.add("material-icons")
-        close.textContent = "close";
-
-        close.addEventListener("click", () => Close());
-
-        infoBox.appendChild(close);
+          sideInfo.insertBefore(div, addDiv);
+        }
       })()
 
-      infoContainer.appendChild(infoBox);
-
-      document.querySelector("#content").appendChild(infoContainer);
+      infoBox.appendChild(sideInfo);
     })();
+
+    //Adds close button
+    (() =>
+    {
+      const close = document.createElement("span");
+      close.classList.add("material-icons")
+      close.textContent = "close";
+
+      close.addEventListener("click", () => Close());
+
+      infoBox.appendChild(close);
+    })()
+
+    infoContainer.appendChild(infoBox);
+
+    document.querySelector("#content").appendChild(infoContainer);
   }
 
   const Edit = (element, project) =>
@@ -429,6 +430,13 @@ const InfoBox = (() =>
     {
       if (e.keyCode === 13) ConfirmChanges();
     });
+    document.querySelector("#info-box").addEventListener("click", (e) =>
+    {
+      e.stopPropagation();
+      const inputs = _.without(document.querySelectorAll("input"), ...document.querySelectorAll("input[type=checkbox]"));
+      if (inputs.length !== 0 && e.target.tagName !== "INPUT" && e.target.tagName !== "SPAN") ConfirmChanges();
+    });
+
   }
 
   const Save = (project) =>
@@ -478,13 +486,15 @@ const InfoBox = (() =>
   const CreateEditButton = (p, project, before) =>
   {
     const icon = document.createElement("span");
-    icon.classList.add("material-icons", "hidden");
+    icon.classList.add("material-icons");
+    if (!ifPhone()) icon.classList.add("hidden");
     icon.textContent = "edit";
     before ? p.insertBefore(icon, p.firstChild) : p.appendChild(icon);
     icon.addEventListener("click", () => Edit(p, project));
 
     (() =>
     {
+      if (ifPhone()) return;
       p.addEventListener("mouseover", () => p.querySelector("span").classList.remove("hidden"));
       p.addEventListener("mouseout", () => p.querySelector("span").classList.add("hidden"));
     })();
@@ -544,4 +554,13 @@ const InfoBox = (() =>
   {
     if (e.target.id === "info-container") InfoBox.Close();
   });
+})();
+
+(() =>
+{
+  if(ifPhone())
+  {
+    const hiddenElements = Array.from(document.getElementsByClassName("hidden"));
+    hiddenElements.forEach(element => element.classList.remove("hidden"));
+  }
 })();
