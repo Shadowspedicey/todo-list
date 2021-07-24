@@ -1,8 +1,28 @@
 import _ from "lodash";
-import { format, differenceInDays, parse } from "date-fns";
+import { format, differenceInDays, parse, parseISO } from "date-fns";
 
-const content = document.querySelector("#content");
-let projects = [];
+//localStorage.removeItem("projects");
+
+//Gets "projects" from localStorage and sets the date accordingly and attaches a function
+let getStoredProjects = () =>
+{
+  const _storage = JSON.parse(localStorage.getItem("projects"));
+  if (_storage == null) return [];
+  _storage.forEach(element => 
+    {
+      element.dueDate = parseISO(element.dueDate);
+      element.AddChecklistToArray = () =>
+      {
+        let _check = Checklist("Name", false);
+        element.checklist.push(_check);
+        return _check;
+      };
+    });
+  return _storage;
+}
+const SyncLocally = () => localStorage.setItem("projects", JSON.stringify(projects));
+
+let projects = getStoredProjects();
 
 const Checklist = (name, checked) =>
 {
@@ -14,21 +34,33 @@ const Project = function(name, description, dueDate, priority, checklist)
   const progress = 0;
   const defaultProject = true;
 
-  const AddChecklistToArray = () =>
-  {
-    let _check = Checklist("Name", false);
-    checklist.push(_check);
-    return _check;
-  };
-
   const obj = { name, description, dueDate, priority, checklist, progress, defaultProject, AddChecklistToArray };
-  projects.push(obj);
+  if (!_.find(projects, project => project === obj)) projects.push(obj);
   return obj;
 }
-Project("SDFAD", "DASDAS", new Date(), "Low", []);
 
 const Interface = (() =>
 {
+  const SetProgressBar = (progressBar, project) =>
+  {
+    progressBar.firstChild.textContent = `${+Math.round(project.progress)}%`;
+    progressBar.querySelector("#bar").style.width = `${project.progress}%`;
+    switch (project.priority)
+    {
+      case "Low":
+        progressBar.querySelector("#bar").style.background = "green";
+        break;
+
+      case "Medium":
+        progressBar.querySelector("#bar").style.background = "yellow";
+        break;
+
+      case "High":
+        progressBar.querySelector("#bar").style.background = "red";
+        break;
+    }
+  }
+
   const OutputProjectToDOM = (project) =>
   {
     const _projectsDiv = document.querySelector("#projects");
@@ -49,11 +81,12 @@ const Interface = (() =>
 
     const progressBar = document.createElement("span");
     progressBar.classList.add("progress-bar");
-    progressBar.textContent = `${project.progress}%`;
+    progressBar.textContent = `${+Math.round(project.progress)}%`
     const progressSpan = document.createElement("span");
     progressSpan.id = "bar";
     progressBar.appendChild(progressSpan);
     projectDOM.appendChild(progressBar);
+    SetProgressBar(progressBar, project);
 
     (() =>
     {
@@ -90,6 +123,8 @@ const Interface = (() =>
         if (doesProjectExist()) return;
 
         OutputProjectToDOM(_project);
+
+        SyncLocally();
       });
   }
   PrintArrayToDOM();
@@ -105,23 +140,7 @@ const Interface = (() =>
 
     remainingDays.textContent = `Remaining Days: ${differenceInDays(project.dueDate, new Date())}`;
 
-    progressBar.firstChild.textContent = `${+Math.round(project.progress)}%`;
-    progressBar.querySelector("#bar").style.width = `${project.progress}%`;
-    switch (project.priority)
-    {
-      case "Low":
-        console.log("a");
-        progressBar.querySelector("#bar").style.background = "green";
-        break;
-
-      case "Medium":
-        progressBar.querySelector("#bar").style.background = "yellow";
-        break;
-
-      case "High":
-        progressBar.querySelector("#bar").style.background = "red";
-        break;
-    }
+    SetProgressBar(progressBar, project);
   }
 
   const AddProject = () =>
@@ -142,7 +161,7 @@ const Interface = (() =>
     e.target.parentElement.remove();
     projects.splice(e.target.parentElement.dataset.index, 1);
     SyncIndexes();
-    //localStorage.setItem("books", JSON.stringify(books));
+    SyncLocally();
   }
 
   const SyncIndexes = () =>
@@ -275,7 +294,7 @@ const InfoBox = (() =>
 
       infoContainer.appendChild(infoBox);
 
-      content.appendChild(infoContainer);
+      document.querySelector("#content").appendChild(infoContainer);
     })();
   }
 
@@ -369,7 +388,6 @@ const InfoBox = (() =>
       for (let i = 0; i < _checklistDOM.length; i++)
       {
         let _element = _.find(_checklistDOM, element => element.dataset.index == i);
-        console.log(_element);
         project.checklist[i].name = _element.querySelector("p").lastChild.textContent;
       }
     })();
@@ -384,6 +402,8 @@ const InfoBox = (() =>
 
     //Changes the info on the project DOM accordingly
     Interface.SaveChangesToDOM(project);
+
+    SyncLocally();
   }
 
   const Close = () =>
@@ -434,6 +454,7 @@ const InfoBox = (() =>
     div.appendChild(input);
 
     document.querySelector("#side-info").insertBefore(div, document.querySelector("#checklist-add"));
+    SyncLocally();
   };
 
   const CreateSaveButton = project =>
