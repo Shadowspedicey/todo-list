@@ -221,7 +221,7 @@ html, body
 
 .info-box h1, p
 {
-  width: min-content;
+  width: max-content;
 }
 
 .info-box h1
