@@ -82,6 +82,31 @@ html, body
   background-color: rgb(238, 238, 238);
 }
 
+#sort-div
+{
+  width: 100%;
+  height: 4em;
+
+  position: absolute;
+  top: -4rem;
+}
+.sort-button
+{
+  font-size: 2em;
+  font-weight: bold;
+  font-family: sans-serif;
+
+  position: relative;
+}
+#sort-right
+{
+  left: 0.5rem;
+}
+#sort-left
+{
+  right: 0.5rem;
+}
+
 .progress-bar
 {
   width: 85%;

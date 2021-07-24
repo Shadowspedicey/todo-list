@@ -1,5 +1,6 @@
 import _ from "lodash";
 import { format, differenceInDays, parse, parseISO } from "date-fns";
+import arrayMove from "array-move";
 
 //localStorage.removeItem("projects");
 
@@ -107,7 +108,34 @@ const Interface = (() =>
 
       projectDOM.addEventListener("mouseover", () => close.classList.remove("hidden"));
       projectDOM.addEventListener("mouseout", () => close.classList.add("hidden"));
-    })()
+    })();
+
+    (() =>
+    {
+      const sortDiv = document.createElement("div");
+      sortDiv.id = "sort-div";
+      sortDiv.classList.add("hidden");
+  
+      const sortRight = document.createElement("button");
+      sortRight.id = "sort-right";
+      sortRight.classList.add("sort-button");
+      sortRight.textContent = ">";
+
+      const sortLeft = document.createElement("button");
+      sortLeft.id = "sort-left";
+      sortLeft.classList.add("sort-button");
+      sortLeft.textContent = "<";
+      sortDiv.appendChild(sortLeft);
+      sortDiv.appendChild(sortRight);
+
+      sortLeft.addEventListener("click", (e) => SortProject(e, projectDOM, true, project));
+      sortRight.addEventListener("click", (e) => SortProject(e, projectDOM, false, project));
+
+      projectDOM.appendChild(sortDiv);
+
+      projectDOM.addEventListener("mouseover", () => sortDiv.classList.remove("hidden"));
+      projectDOM.addEventListener("mouseout", () => sortDiv.classList.add("hidden"));
+    })();
 
     _projectsDiv.insertBefore(projectDOM, document.querySelector("#add"));
 
@@ -171,11 +199,39 @@ const Interface = (() =>
     SyncLocally();
   }
 
+  //gets the projects DOM and loops through them assigning the index dataset by name
   const SyncIndexes = () =>
   {
-    //gets the projects DOM and loops through them assigning the index dataset by name
     const _projectsDOM = _.without([...document.querySelectorAll(".project")], document.querySelector("#add"));
     _projectsDOM.forEach(_project => _project.dataset.index = projects.indexOf(_.find(projects, project => project.name === _project.firstChild.textContent)));
+  }
+
+  //Moves Projects in the DOM
+  const SortProject = (e, element, left, project) =>
+  {
+    e.stopPropagation();
+
+    const MoveLeft = () =>
+    {
+      if(element.previousElementSibling) 
+      {
+        element.parentNode.insertBefore(element, element.previousElementSibling);
+        projects = arrayMove(projects, projects.indexOf(project), projects.indexOf(project) - 1);
+      }
+    }
+
+    const MoveRight = () =>
+    {
+      if(element.nextElementSibling && element.nextElementSibling !== document.querySelector("#add")) 
+      {
+        element.parentNode.insertBefore(element.nextElementSibling, element);
+        projects = arrayMove(projects, projects.indexOf(project), projects.indexOf(project) + 1);
+      }
+    }
+
+    left ? MoveLeft() : MoveRight();
+    
+    SyncLocally();
   }
 
   //Adds even listener on the add project button

@@ -22,6 +22,7 @@
     "webpack-cli": "^4.7.2"
   },
   "dependencies": {
+    "array-move": "^3.0.1",
     "date-fns": "^2.22.1",
     "lodash": "^4.17.21"
   }
