@@ -34,6 +34,13 @@ const Project = function(name, description, dueDate, priority, checklist)
   const progress = 0;
   const defaultProject = true;
 
+  const AddChecklistToArray = () =>
+  {
+    let _check = Checklist("Name", false);
+    checklist.push(_check);
+    return _check;
+  };
+
   const obj = { name, description, dueDate, priority, checklist, progress, defaultProject, AddChecklistToArray };
   if (!_.find(projects, project => project === obj)) projects.push(obj);
   return obj;
