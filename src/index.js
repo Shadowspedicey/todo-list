@@ -1,566 +1,568 @@
 import _ from "lodash";
 import { format, differenceInDays, parse, parseISO } from "date-fns";
 import arrayMove from "array-move";
+import isMobile from "is-mobile";
 
 //localStorage.removeItem("projects");
-
-const ifPhone = () => (/Android|webOS|iPhone|iPad|Mac|Macintosh|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) ? true :  false;
 
 //Gets "projects" from localStorage and sets the date accordingly and attaches a function
 let getStoredProjects = () =>
 {
-  const _storage = JSON.parse(localStorage.getItem("projects"));
-  if (_storage == null) return [];
-  _storage.forEach(element => 
-    {
-      element.dueDate = parseISO(element.dueDate);
-      element.AddChecklistToArray = () =>
-      {
-        let _check = Checklist("Name", false);
-        element.checklist.push(_check);
-        return _check;
-      };
-    });
-  return _storage;
-}
+	const _storage = JSON.parse(localStorage.getItem("projects"));
+	if (_storage == null) return [];
+	_storage.forEach(element =>
+	{
+		element.dueDate = parseISO(element.dueDate);
+		element.AddChecklistToArray = () =>
+		{
+			let _check = Checklist("Name", false);
+			element.checklist.push(_check);
+			return _check;
+		};
+	});
+	return _storage;
+};
 const SyncLocally = () => localStorage.setItem("projects", JSON.stringify(projects));
 
 let projects = getStoredProjects();
 
 const Checklist = (name, checked) =>
 {
-  return {name, checked};
-}
+	return {name, checked};
+};
 
 const Project = function(name, description, dueDate, priority, checklist)
 {
-  const progress = 0;
-  const defaultProject = true;
+	const progress = 0;
+	const defaultProject = true;
 
-  const AddChecklistToArray = () =>
-  {
-    let _check = Checklist("Name", false);
-    checklist.push(_check);
-    return _check;
-  };
+	const AddChecklistToArray = () =>
+	{
+		let _check = Checklist("Name", false);
+		checklist.push(_check);
+		return _check;
+	};
 
-  const obj = { name, description, dueDate, priority, checklist, progress, defaultProject, AddChecklistToArray };
-  if (!_.find(projects, project => project === obj)) projects.push(obj);
-  return obj;
-}
+	const obj = { name, description, dueDate, priority, checklist, progress, defaultProject, AddChecklistToArray };
+	if (!_.find(projects, project => project === obj)) projects.push(obj);
+	return obj;
+};
 
 const Interface = (() =>
 {
-  const SetProgressBar = (progressBar, project) =>
-  {
-    progressBar.firstChild.textContent = `${+Math.round(project.progress)}%`;
-    progressBar.querySelector("#bar").style.width = `${project.progress}%`;
-    switch (project.priority)
-    {
-      case "Low":
-        progressBar.querySelector("#bar").style.background = "green";
-        break;
+	const SetProgressBar = (progressBar, project) =>
+	{
+		progressBar.firstChild.textContent = `${+Math.round(project.progress)}%`;
+		progressBar.querySelector("#bar").style.width = `${project.progress}%`;
+		switch (project.priority)
+		{
+			case "Low":
+				progressBar.querySelector("#bar").style.background = "green";
+				break;
 
-      case "Medium":
-        progressBar.querySelector("#bar").style.background = "yellow";
-        break;
+			case "Medium":
+				progressBar.querySelector("#bar").style.background = "yellow";
+				break;
 
-      case "High":
-        progressBar.querySelector("#bar").style.background = "red";
-        break;
-    }
-  }
+			case "High":
+				progressBar.querySelector("#bar").style.background = "red";
+				break;
 
-  const OutputProjectToDOM = (project) =>
-  {
-    const _projectsDiv = document.querySelector("#projects");
-    const projectDOM = document.createElement("div");
-    projectDOM.classList.add("project");
-    projectDOM.dataset.index = projects.indexOf(project);
+			default:
+				console.log("error with priority");
+		}
+	};
 
-    const name = document.createElement("h2");
-    name.textContent = project.name;
-    projectDOM.appendChild(name);
+	const OutputProjectToDOM = (project) =>
+	{
+		const _projectsDiv = document.querySelector("#projects");
+		const projectDOM = document.createElement("div");
+		projectDOM.classList.add("project");
+		projectDOM.dataset.index = projects.indexOf(project);
 
-    const date = document.createElement("h2");
-    date.textContent = `Due Date:${format(project.dueDate, "dd/M/yyyy")}`;
+		const name = document.createElement("h2");
+		name.textContent = project.name;
+		projectDOM.appendChild(name);
 
-    const remainingDays = document.createElement("h2");
-    remainingDays.textContent = `Remaining Days: ${differenceInDays(project.dueDate, new Date())}`
-    projectDOM.appendChild(remainingDays);
+		const date = document.createElement("h2");
+		date.textContent = `Due Date:${format(project.dueDate, "dd/M/yyyy")}`;
 
-    const progressBar = document.createElement("span");
-    progressBar.classList.add("progress-bar");
-    progressBar.textContent = `${+Math.round(project.progress)}%`
-    const progressSpan = document.createElement("span");
-    progressSpan.id = "bar";
-    progressBar.appendChild(progressSpan);
-    projectDOM.appendChild(progressBar);
-    SetProgressBar(progressBar, project);
+		const remainingDays = document.createElement("h2");
+		remainingDays.textContent = `Remaining Days: ${differenceInDays(project.dueDate, new Date())}`;
+		projectDOM.appendChild(remainingDays);
 
-    (() =>
-    {
-      const close = document.createElement("span");
-      close.classList.add("material-icons", "hidden")
-      close.textContent = "close";
+		const progressBar = document.createElement("span");
+		progressBar.classList.add("progress-bar");
+		progressBar.textContent = `${+Math.round(project.progress)}%`;
+		const progressSpan = document.createElement("span");
+		progressSpan.id = "bar";
+		progressBar.appendChild(progressSpan);
+		projectDOM.appendChild(progressBar);
+		SetProgressBar(progressBar, project);
 
-      close.addEventListener("click", (e) => DeleteProject(e));
+		(() =>
+		{
+			const close = document.createElement("span");
+			close.classList.add("material-icons", "hidden");
+			close.textContent = "close";
 
-      projectDOM.appendChild(close);
+			close.addEventListener("click", (e) => DeleteProject(e));
 
-      if (ifPhone()) return;
-      projectDOM.addEventListener("mouseover", () => close.classList.remove("hidden"));
-      projectDOM.addEventListener("mouseout", () => close.classList.add("hidden"));
-    })();
+			projectDOM.appendChild(close);
 
-    (() =>
-    {
-      const sortDiv = document.createElement("div");
-      sortDiv.id = "sort-div";
-      sortDiv.classList.add("hidden");
-  
-      const sortRight = document.createElement("button");
-      sortRight.id = "sort-right";
-      sortRight.classList.add("sort-button");
-      sortRight.textContent = ">";
+			if (isMobile()) return;
+			projectDOM.addEventListener("mouseover", () => close.classList.remove("hidden"));
+			projectDOM.addEventListener("mouseout", () => close.classList.add("hidden"));
+		})();
 
-      const sortLeft = document.createElement("button");
-      sortLeft.id = "sort-left";
-      sortLeft.classList.add("sort-button");
-      sortLeft.textContent = "<";
-      sortDiv.appendChild(sortLeft);
-      sortDiv.appendChild(sortRight);
+		(() =>
+		{
+			const sortDiv = document.createElement("div");
+			sortDiv.id = "sort-div";
+			sortDiv.classList.add("hidden");
+	
+			const sortRight = document.createElement("button");
+			sortRight.id = "sort-right";
+			sortRight.classList.add("sort-button");
+			sortRight.textContent = ">";
 
-      sortLeft.addEventListener("click", (e) => SortProject(e, projectDOM, true, project));
-      sortRight.addEventListener("click", (e) => SortProject(e, projectDOM, false, project));
+			const sortLeft = document.createElement("button");
+			sortLeft.id = "sort-left";
+			sortLeft.classList.add("sort-button");
+			sortLeft.textContent = "<";
+			sortDiv.appendChild(sortLeft);
+			sortDiv.appendChild(sortRight);
 
-      projectDOM.appendChild(sortDiv);
+			sortLeft.addEventListener("click", (e) => SortProject(e, projectDOM, true, project));
+			sortRight.addEventListener("click", (e) => SortProject(e, projectDOM, false, project));
 
-      if (ifPhone()) return;
-      projectDOM.addEventListener("mouseover", () => sortDiv.classList.remove("hidden"));
-      projectDOM.addEventListener("mouseout", () => sortDiv.classList.add("hidden"));
-    })();
+			projectDOM.appendChild(sortDiv);
 
-    _projectsDiv.insertBefore(projectDOM, document.querySelector("#add"));
+			if (isMobile()) return;
+			projectDOM.addEventListener("mouseover", () => sortDiv.classList.remove("hidden"));
+			projectDOM.addEventListener("mouseout", () => sortDiv.classList.add("hidden"));
+		})();
 
-    projectDOM.addEventListener("click", () => InfoBox.Create(project));
-  }
+		_projectsDiv.insertBefore(projectDOM, document.querySelector("#add"));
 
-  const PrintArrayToDOM = () =>
-  {
-    const _projectsDOM = _.without([...document.querySelectorAll(".project")], document.querySelector("#add"));
-    projects.forEach(_project =>
-      {
-        let doesProjectExist = () =>
-        {
-          for (let i = 0; i < _projectsDOM.length; i++)
-          {
-            if (_projectsDOM[i].dataset.index == projects.indexOf(_project)) return true;
-          }
-          return false;
-        }
-        if (doesProjectExist()) return;
+		projectDOM.addEventListener("click", () => InfoBox.Create(project));
+	};
 
-        OutputProjectToDOM(_project);
+	const PrintArrayToDOM = () =>
+	{
+		const _projectsDOM = _.without([...document.querySelectorAll(".project")], document.querySelector("#add"));
+		projects.forEach(_project =>
+		{
+			let doesProjectExist = () =>
+			{
+				for (let i = 0; i < _projectsDOM.length; i++)
+				{
+					if (_projectsDOM[i].dataset.index === projects.indexOf(_project)) return true;
+				}
+				return false;
+			};
+			if (doesProjectExist()) return;
 
-        SyncLocally();
-      });
-  }
-  PrintArrayToDOM();
+			OutputProjectToDOM(_project);
 
-  const SaveChangesToDOM = (project) =>
-  {
-    const projectDOM = document.querySelector(`[data-index="${projects.indexOf(project)}"]`);
-    const header = projectDOM.children[0];
-    const remainingDays = projectDOM.children[1];
-    const progressBar = projectDOM.children[2];
+			SyncLocally();
+		});
+	};
+	PrintArrayToDOM();
 
-    header.textContent = project.name;
+	const SaveChangesToDOM = (project) =>
+	{
+		const projectDOM = document.querySelector(`[data-index="${projects.indexOf(project)}"]`);
+		const header = projectDOM.children[0];
+		const remainingDays = projectDOM.children[1];
+		const progressBar = projectDOM.children[2];
 
-    remainingDays.textContent = `Remaining Days: ${differenceInDays(project.dueDate, new Date())}`;
+		header.textContent = project.name;
 
-    SetProgressBar(progressBar, project);
-  }
+		remainingDays.textContent = `Remaining Days: ${differenceInDays(project.dueDate, new Date())}`;
 
-  const AddProject = () =>
-  {
-    let name;
-    const nameArrayLength = _.filter(projects, project => project.name.includes("Name") && project.defaultProject === true).length;
-    //checks if object with name "Name" exists if it does create object with name of "Name" plus length if names array
-    if (nameArrayLength === 0) name = "Name";
-    else name = `Name${nameArrayLength}`;
+		SetProgressBar(progressBar, project);
+	};
 
-    Project(name, "", new Date(), "Low", []);
-    PrintArrayToDOM();
-  }
+	const AddProject = () =>
+	{
+		let name;
+		const nameArrayLength = _.filter(projects, project => project.name.includes("Name") && project.defaultProject === true).length;
+		//checks if object with name "Name" exists if it does create object with name of "Name" plus length if names array
+		if (nameArrayLength === 0) name = "Name";
+		else name = `Name${nameArrayLength}`;
 
-  const DeleteProject = (e) =>
-  {
-    e.stopPropagation();
-    e.target.parentElement.remove();
-    projects.splice(e.target.parentElement.dataset.index, 1);
-    SyncIndexes();
-    SyncLocally();
-  }
+		Project(name, "", new Date(), "Low", []);
+		PrintArrayToDOM();
+	};
 
-  //gets the projects DOM and loops through them assigning the index dataset by name
-  const SyncIndexes = () =>
-  {
-    const _projectsDOM = _.without([...document.querySelectorAll(".project")], document.querySelector("#add"));
-    _projectsDOM.forEach(_project => _project.dataset.index = projects.indexOf(_.find(projects, project => project.name === _project.firstChild.textContent)));
-  }
+	const DeleteProject = (e) =>
+	{
+		e.stopPropagation();
+		e.target.parentElement.remove();
+		projects.splice(e.target.parentElement.dataset.index, 1);
+		SyncIndexes();
+		SyncLocally();
+	};
 
-  //Moves Projects in the DOM
-  const SortProject = (e, element, left, project) =>
-  {
-    e.stopPropagation();
+	//gets the projects DOM and loops through them assigning the index dataset by name
+	const SyncIndexes = () =>
+	{
+		const _projectsDOM = _.without([...document.querySelectorAll(".project")], document.querySelector("#add"));
+		_projectsDOM.forEach(_project => _project.dataset.index = projects.indexOf(_.find(projects, project => project.name === _project.firstChild.textContent)));
+	};
 
-    const MoveLeft = () =>
-    {
-      if(element.previousElementSibling) 
-      {
-        element.parentNode.insertBefore(element, element.previousElementSibling);
-        projects = arrayMove(projects, projects.indexOf(project), projects.indexOf(project) - 1);
-      }
-    }
+	//Moves Projects in the DOM
+	const SortProject = (e, element, left, project) =>
+	{
+		e.stopPropagation();
 
-    const MoveRight = () =>
-    {
-      if(element.nextElementSibling && element.nextElementSibling !== document.querySelector("#add")) 
-      {
-        element.parentNode.insertBefore(element.nextElementSibling, element);
-        projects = arrayMove(projects, projects.indexOf(project), projects.indexOf(project) + 1);
-      }
-    }
+		const MoveLeft = () =>
+		{
+			if(element.previousElementSibling) 
+			{
+				element.parentNode.insertBefore(element, element.previousElementSibling);
+				projects = arrayMove(projects, projects.indexOf(project), projects.indexOf(project) - 1);
+			}
+		};
 
-    left ? MoveLeft() : MoveRight();
-    
-    SyncLocally();
-  }
+		const MoveRight = () =>
+		{
+			if(element.nextElementSibling && element.nextElementSibling !== document.querySelector("#add")) 
+			{
+				element.parentNode.insertBefore(element.nextElementSibling, element);
+				projects = arrayMove(projects, projects.indexOf(project), projects.indexOf(project) + 1);
+			}
+		};
 
-  //Adds even listener on the add project button
-  (() =>
-  {
-    const projectAdd = document.querySelector("#add");
-    projectAdd.addEventListener("click", () => AddProject());
-  })();
+		left ? MoveLeft() : MoveRight();
+		
+		SyncLocally();
+	};
 
-  return { OutputProjectToDOM, SaveChangesToDOM }
+	//Adds even listener on the add project button
+	(() =>
+	{
+		const projectAdd = document.querySelector("#add");
+		projectAdd.addEventListener("click", () => AddProject());
+	})();
+
+	return { OutputProjectToDOM, SaveChangesToDOM };
 })();
 
 const InfoBox = (() =>
 {
-  const _priorities = ["Low", "Medium", "High"];
+	const _priorities = ["Low", "Medium", "High"];
 
-  const Create = (project) =>
-  {
-    const infoContainer = document.createElement("div");
-    infoContainer.id = "info-container";
+	const Create = (project) =>
+	{
+		const infoContainer = document.createElement("div");
+		infoContainer.id = "info-container";
 
-    const infoBox = document.createElement("div");
-    infoBox.id = "info-box";
+		const infoBox = document.createElement("div");
+		infoBox.id = "info-box";
 
-    const mainInfo = document.createElement("div");
-    mainInfo.id = "main-info";
+		const mainInfo = document.createElement("div");
+		mainInfo.id = "main-info";
 
-    //Creates the info fields through a loop
-    (() =>
-    {
-      const _properties = ["name", "description", "dueDate", "priority"];
-      for (let i = 0; i < _properties.length; i++)
-      {
-        let div = document.createElement("div");
-        div.classList.add("info-box");
-        div.id = _properties[i];
+		//Creates the info fields through a loop
+		(() =>
+		{
+			const _properties = ["name", "description", "dueDate", "priority"];
+			for (let i = 0; i < _properties.length; i++)
+			{
+				let div = document.createElement("div");
+				div.classList.add("info-box");
+				div.id = _properties[i];
 
-        const h1 = document.createElement("h1");
-        h1.textContent = _properties[i];
-        div.appendChild(h1);
+				const h1 = document.createElement("h1");
+				h1.textContent = _properties[i];
+				div.appendChild(h1);
 
-        const p = document.createElement("p");
-        p.textContent = project[_properties[i]];
-        if (_properties[i] === "dueDate") p.textContent = format(project.dueDate, "dd/MM/yyyy");
+				const p = document.createElement("p");
+				p.textContent = project[_properties[i]];
+				if (_properties[i] === "dueDate") p.textContent = format(project.dueDate, "dd/MM/yyyy");
 
-        CreateEditButton(p, project, false);
+				CreateEditButton(p, project, false);
 
-        div.appendChild(p);
+				div.appendChild(p);
 
-        mainInfo.appendChild(div);
-      }
-    })();
-    infoBox.appendChild(mainInfo);
+				mainInfo.appendChild(div);
+			}
+		})();
+		infoBox.appendChild(mainInfo);
 
-    //Creates the side info div and appends every checklist obj in project
-    (() =>
-    {
-      const sideInfo = document.createElement("div");
-      sideInfo.id = "side-info";
+		//Creates the side info div and appends every checklist obj in project
+		(() =>
+		{
+			const sideInfo = document.createElement("div");
+			sideInfo.id = "side-info";
 
-      const header = document.createElement("div");
-      header.classList.add("info-box");
-      header.id = "checklist-header";
+			const header = document.createElement("div");
+			header.classList.add("info-box");
+			header.id = "checklist-header";
 
-      const h1 = document.createElement("h1");
-      h1.textContent = "Checklist";
-      header.appendChild(h1);
-      sideInfo.appendChild(header);
+			const h1 = document.createElement("h1");
+			h1.textContent = "Checklist";
+			header.appendChild(h1);
+			sideInfo.appendChild(header);
 
-      //Adds the add checklist button
-      const addDiv = document.createElement("div");
-      addDiv.id = "checklist-add";
-      addDiv.textContent = "+";
-      addDiv.addEventListener("click", () => CreateChecklistItem(project));
-      sideInfo.appendChild(addDiv);
+			//Adds the add checklist button
+			const addDiv = document.createElement("div");
+			addDiv.id = "checklist-add";
+			addDiv.textContent = "+";
+			addDiv.addEventListener("click", () => CreateChecklistItem(project));
+			sideInfo.appendChild(addDiv);
 
-      //Adds the checklist
-      (() =>
-      {
-        for (let i = 0; i < project.checklist.length; i++)
-        {
-          const div = document.createElement("div");
-          div.classList.add("info-box", "checklist");
-          div.dataset.index = i;
+			//Adds the checklist
+			(() =>
+			{
+				for (let i = 0; i < project.checklist.length; i++)
+				{
+					const div = document.createElement("div");
+					div.classList.add("info-box", "checklist");
+					div.dataset.index = i;
 
-          const p = document.createElement("p");
-          p.textContent = project.checklist[i].name;
-          
-          CreateEditButton(p, project, true);
+					const p = document.createElement("p");
+					p.textContent = project.checklist[i].name;
+					
+					CreateEditButton(p, project, true);
 
-          div.appendChild(p);
+					div.appendChild(p);
 
-          const input = document.createElement("input");
-          input.type = "checkbox";
-          input.checked = project.checklist[i].checked;
-          input.addEventListener("change", () =>
-          {
-            project.checklist[i].checked = input.checked;
-            Save(project);
-          });
-          div.appendChild(input);
+					const input = document.createElement("input");
+					input.type = "checkbox";
+					input.checked = project.checklist[i].checked;
+					input.addEventListener("change", () =>
+					{
+						project.checklist[i].checked = input.checked;
+						Save(project);
+					});
+					div.appendChild(input);
 
-          sideInfo.insertBefore(div, addDiv);
-        }
-      })()
+					sideInfo.insertBefore(div, addDiv);
+				}
+			})();
 
-      infoBox.appendChild(sideInfo);
-    })();
+			infoBox.appendChild(sideInfo);
+		})();
 
-    //Adds close button
-    (() =>
-    {
-      const close = document.createElement("span");
-      close.classList.add("material-icons")
-      close.textContent = "close";
+		//Adds close button
+		(() =>
+		{
+			const close = document.createElement("span");
+			close.classList.add("material-icons");
+			close.textContent = "close";
 
-      close.addEventListener("click", () => Close());
+			close.addEventListener("click", () => Close());
 
-      infoBox.appendChild(close);
-    })()
+			infoBox.appendChild(close);
+		})();
 
-    infoContainer.appendChild(infoBox);
+		infoContainer.appendChild(infoBox);
 
-    document.querySelector("#content").appendChild(infoContainer);
-  }
+		document.querySelector("#content").appendChild(infoContainer);
+	};
 
-  const Edit = (element, project) =>
-  {
-    project.defaultProject = false;
+	const Edit = (element, project) =>
+	{
+		project.defaultProject = false;
 
-    element.querySelector("span").remove();
-    let pInput = document.createElement("input");
-    switch (element.parentElement.id)
-    {
-      case "name":
-      case "description":
-        pInput.type = "text";
-        pInput.value = element.textContent;
-        break;
+		element.querySelector("span").remove();
+		let pInput = document.createElement("input");
+		switch (element.parentElement.id)
+		{
+			case "name":
+			case "description":
+				pInput.type = "text";
+				pInput.value = element.textContent;
+				break;
 
-      case "dueDate":
-        pInput.type = "date";
-        pInput.value = format(project.dueDate, "yyyy-MM-dd");
-        pInput.min = format(new Date(), "yyyy-MM-dd");
-        break;
+			case "dueDate":
+				pInput.type = "date";
+				pInput.value = format(project.dueDate, "yyyy-MM-dd");
+				pInput.min = format(new Date(), "yyyy-MM-dd");
+				break;
 
-      case "priority":
-        pInput = document.createElement("select");
-        _priorities.forEach(_priority =>
-          {
-            const option = document.createElement("option");
-            option.value = _priority;
-            option.textContent = _priority;
+			case "priority":
+				pInput = document.createElement("select");
+				_priorities.forEach(_priority =>
+				{
+					const option = document.createElement("option");
+					option.value = _priority;
+					option.textContent = _priority;
 
-            pInput.appendChild(option);
-          });
-        pInput.value = element.textContent;
-        break;
+					pInput.appendChild(option);
+				});
+				pInput.value = element.textContent;
+				break;
 
-      //Fallback to be able to edit checklist
-      default:
-        pInput.type = "text";
-        pInput.value = element.lastChild.textContent;
-        break;
-    }
-    if (element.parentElement.classList.contains("checklist")) element.parentElement.insertBefore(pInput, element.parentElement.firstChild);
-    else element.parentElement.appendChild(pInput);
-    element.remove();
+			//Fallback to be able to edit checklist
+			default:
+				pInput.type = "text";
+				pInput.value = element.lastChild.textContent;
+				break;
+		}
+		if (element.parentElement.classList.contains("checklist")) element.parentElement.insertBefore(pInput, element.parentElement.firstChild);
+		else element.parentElement.appendChild(pInput);
+		element.remove();
 
-    //Creates the p element and fills it with the value of the input and appends it while creating and edit button
-    const ConfirmChanges = () =>
-    {
-      const newP = document.createElement("p");
-      newP.textContent = pInput.value;
-      if (pInput.parentElement.id === "dueDate") newP.textContent = format(parse(pInput.value, "yyyy-MM-dd", new Date()), "dd/MM/yyyy");
+		//Creates the p element and fills it with the value of the input and appends it while creating and edit button
+		const ConfirmChanges = () =>
+		{
+			const newP = document.createElement("p");
+			newP.textContent = pInput.value;
+			if (pInput.parentElement.id === "dueDate") newP.textContent = format(parse(pInput.value, "yyyy-MM-dd", new Date()), "dd/MM/yyyy");
 
-      if (pInput.parentElement.classList.contains("checklist")) CreateEditButton(newP, project, true)
-      else CreateEditButton(newP, project, false);
+			if (pInput.parentElement.classList.contains("checklist")) CreateEditButton(newP, project, true);
+			else CreateEditButton(newP, project, false);
 
-      if (pInput.parentElement.classList.contains("checklist")) pInput.parentElement.insertBefore(newP, pInput.parentElement.firstChild);
-      else pInput.parentElement.appendChild(newP);
-      pInput.remove();
+			if (pInput.parentElement.classList.contains("checklist")) pInput.parentElement.insertBefore(newP, pInput.parentElement.firstChild);
+			else pInput.parentElement.appendChild(newP);
+			pInput.remove();
 
-      CreateSaveButton(project);
-    }
+			CreateSaveButton(project);
+		};
 
-    if (pInput.parentElement.id === "dueDate" || pInput.parentElement.id === "priority") return pInput.addEventListener("change", () => ConfirmChanges());
+		if (pInput.parentElement.id === "dueDate" || pInput.parentElement.id === "priority") return pInput.addEventListener("change", () => ConfirmChanges());
 
 
-    //Checks for enter key to confirm changes to info box
-    pInput.addEventListener("keyup", (e) =>
-    {
-      if (e.keyCode === 13) ConfirmChanges();
-    });
-    document.querySelector("#info-box").addEventListener("click", (e) =>
-    {
-      e.stopPropagation();
-      const inputs = _.without(document.querySelectorAll("input"), ...document.querySelectorAll("input[type=checkbox]"));
-      if (inputs.length !== 0 && e.target.tagName !== "INPUT" && e.target.tagName !== "SPAN") ConfirmChanges();
-    });
+		//Checks for enter key to confirm changes to info box
+		pInput.addEventListener("keyup", (e) =>
+		{
+			if (e.keyCode === 13) ConfirmChanges();
+		});
+		document.querySelector("#info-box").addEventListener("click", (e) =>
+		{
+			e.stopPropagation();
+			const inputs = _.without(document.querySelectorAll("input"), ...document.querySelectorAll("input[type=checkbox]"));
+			if (inputs.length !== 0 && e.target.tagName !== "INPUT" && e.target.tagName !== "SPAN") ConfirmChanges();
+		});
 
-  }
+	};
 
-  const Save = (project) =>
-  {
-    //Saves info fields and date
-    (() =>
-    {
-      const _infoBoxes = _.without([...document.querySelectorAll(".info-box")], document.querySelector("#checklist-header"), ...document.querySelectorAll(".checklist"));
-      for (let i = 0; i < _infoBoxes.length; i++)
-      {
-        project[_infoBoxes[i].id] = _infoBoxes[i].querySelector("p").firstChild.textContent;
-        if (_infoBoxes[i].id == "dueDate") project[_infoBoxes[i].id] = parse(_infoBoxes[i].querySelector("p").firstChild.textContent, "dd/MM/yyyy", new Date());
-      };  
-    })();
+	const Save = (project) =>
+	{
+		//Saves info fields and date
+		(() =>
+		{
+			const _infoBoxes = _.without([...document.querySelectorAll(".info-box")], document.querySelector("#checklist-header"), ...document.querySelectorAll(".checklist"));
+			for (let i = 0; i < _infoBoxes.length; i++)
+			{
+				project[_infoBoxes[i].id] = _infoBoxes[i].querySelector("p").firstChild.textContent;
+				if (_infoBoxes[i].id === "dueDate") project[_infoBoxes[i].id] = parse(_infoBoxes[i].querySelector("p").firstChild.textContent, "dd/MM/yyyy", new Date());
+			}
+		})();
 
-    //Saves Checklist
-    (() =>
-    {
-      const _checklistDOM = _.without([...document.querySelectorAll(".checklist")], document.querySelector("#checklist-header"));
-      for (let i = 0; i < _checklistDOM.length; i++)
-      {
-        let _element = _.find(_checklistDOM, element => element.dataset.index == i);
-        project.checklist[i].name = _element.querySelector("p").lastChild.textContent;
-      }
-    })();
-    
-    //Calculates progress and saves it
-    (() =>
-    {
-      if (project.checklist.length === 0) return;
-      let _checkedTemp = _.filter(project.checklist, (_check) => _check.checked);
-      project.progress = (_checkedTemp.length / project.checklist.length) * 100;
-    })();
+		//Saves Checklist
+		(() =>
+		{
+			const _checklistDOM = _.without([...document.querySelectorAll(".checklist")], document.querySelector("#checklist-header"));
+			for (let i = 0; i < _checklistDOM.length; i++)
+			{
+				let _element = _.find(_checklistDOM, element => element.dataset.index === i);
+				project.checklist[i].name = _element.querySelector("p").lastChild.textContent;
+			}
+		})();
+		
+		//Calculates progress and saves it
+		(() =>
+		{
+			if (project.checklist.length === 0) return;
+			let _checkedTemp = _.filter(project.checklist, (_check) => _check.checked);
+			project.progress = (_checkedTemp.length / project.checklist.length) * 100;
+		})();
 
-    //Changes the info on the project DOM accordingly
-    Interface.SaveChangesToDOM(project);
+		//Changes the info on the project DOM accordingly
+		Interface.SaveChangesToDOM(project);
 
-    SyncLocally();
-  }
+		SyncLocally();
+	};
 
-  const Close = () =>
-  {
-    document.querySelector("#info-container").remove();
-  }
+	const Close = () =>
+	{
+		document.querySelector("#info-container").remove();
+	};
 
-  //Create the edit button and adds event listeners to icon parent and passed the project
-  const CreateEditButton = (p, project, before) =>
-  {
-    const icon = document.createElement("span");
-    icon.classList.add("material-icons");
-    if (!ifPhone()) icon.classList.add("hidden");
-    icon.textContent = "edit";
-    before ? p.insertBefore(icon, p.firstChild) : p.appendChild(icon);
-    icon.addEventListener("click", () => Edit(p, project));
+	//Create the edit button and adds event listeners to icon parent and passed the project
+	const CreateEditButton = (p, project, before) =>
+	{
+		const icon = document.createElement("span");
+		icon.classList.add("material-icons");
+		if (!isMobile()) icon.classList.add("hidden");
+		icon.textContent = "edit";
+		before ? p.insertBefore(icon, p.firstChild) : p.appendChild(icon);
+		icon.addEventListener("click", () => Edit(p, project));
 
-    (() =>
-    {
-      if (ifPhone()) return;
-      p.addEventListener("mouseover", () => p.querySelector("span").classList.remove("hidden"));
-      p.addEventListener("mouseout", () => p.querySelector("span").classList.add("hidden"));
-    })();
-  };
+		(() =>
+		{
+			if (isMobile()) return;
+			p.addEventListener("mouseover", () => p.querySelector("span").classList.remove("hidden"));
+			p.addEventListener("mouseout", () => p.querySelector("span").classList.add("hidden"));
+		})();
+	};
 
-  //Creats a checklist item and appends it to side info
-  const CreateChecklistItem = (project) =>
-  {
-    let _check = project.AddChecklistToArray();
+	//Creats a checklist item and appends it to side info
+	const CreateChecklistItem = (project) =>
+	{
+		let _check = project.AddChecklistToArray();
 
-    const div = document.createElement("div");
-    div.classList.add("info-box", "checklist");
-    div.dataset.index = project.checklist.indexOf(_check);
+		const div = document.createElement("div");
+		div.classList.add("info-box", "checklist");
+		div.dataset.index = project.checklist.indexOf(_check);
 
-    const p = document.createElement("p");
-    p.textContent = _check.name;
-    
-    CreateEditButton(p, project, true);
+		const p = document.createElement("p");
+		p.textContent = _check.name;
+		
+		CreateEditButton(p, project, true);
 
-    div.appendChild(p);
+		div.appendChild(p);
 
-    const input = document.createElement("input");
-    input.type = "checkbox";
-    input.checked = _check.checked;
-    input.addEventListener("change", () =>
-    {
-      _checked.checked = input.checked;
-      Save();
-    });
-    div.appendChild(input);
+		const input = document.createElement("input");
+		input.type = "checkbox";
+		input.checked = _check.checked;
+		input.addEventListener("change", () =>
+		{
+			_check.checked = input.checked;
+			Save();
+		});
+		div.appendChild(input);
 
-    document.querySelector("#side-info").insertBefore(div, document.querySelector("#checklist-add"));
-    SyncLocally();
-  };
+		document.querySelector("#side-info").insertBefore(div, document.querySelector("#checklist-add"));
+		SyncLocally();
+	};
 
-  const CreateSaveButton = project =>
-  {
-    if (document.querySelector("#save")) return;
-    const saveButton = document.createElement("div");
-    saveButton.id = "save";
-    saveButton.textContent = "Save";
-    saveButton.addEventListener("click", () => 
-    {
-      Save(project);
-      saveButton.remove();
-    });
+	const CreateSaveButton = project =>
+	{
+		if (document.querySelector("#save")) return;
+		const saveButton = document.createElement("div");
+		saveButton.id = "save";
+		saveButton.textContent = "Save";
+		saveButton.addEventListener("click", () => 
+		{
+			Save(project);
+			saveButton.remove();
+		});
 
-    document.querySelector("#main-info").appendChild(saveButton);
-  }
+		document.querySelector("#main-info").appendChild(saveButton);
+	};
 
-  return { Create, Close }
+	return { Create, Close };
 })();
 
 (() =>
 {
-  window.addEventListener("click", (e) => 
-  {
-    if (e.target.id === "info-container") InfoBox.Close();
-  });
+	window.addEventListener("click", (e) => 
+	{
+		if (e.target.id === "info-container") InfoBox.Close();
+	});
 })();
 
 (() =>
 {
-  if(ifPhone())
-  {
-    const hiddenElements = Array.from(document.getElementsByClassName("hidden"));
-    hiddenElements.forEach(element => element.classList.remove("hidden"));
-  }
+	if(isMobile())
+	{
+		const hiddenElements = Array.from(document.getElementsByClassName("hidden"));
+		hiddenElements.forEach(element => element.classList.remove("hidden"));
+	}
 })();
