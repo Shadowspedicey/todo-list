@@ -11,13 +11,20 @@ let getStoredProjects = () =>
 {
 	const _storage = JSON.parse(localStorage.getItem("projects"));
 	if (_storage == null) return [];
-	_storage.forEach(element =>
+	_storage.forEach(project =>
 	{
-		element.dueDate = parseISO(element.dueDate);
-		element.AddChecklistToArray = () =>
+		project.dueDate = parseISO(project.dueDate);
+		project.AddChecklistToArray = () =>
 		{
-			let _check = Checklist("Name", false);
-			element.checklist.push(_check);
+			let name;
+			const nameArrayLength = _.filter(project.checklist, check => check.name.match(/^Name(\d)*$/gm)).length;
+			
+			// Checks if check with name "Name" exists if it does create check with name of "Name" plus length if names array
+			if (nameArrayLength === 0) name = "Name";
+			else name = `Name${nameArrayLength}`;
+
+			let _check = Checklist(name, false);
+			project.checklist.push(_check);
 			return _check;
 		};
 	});
@@ -26,6 +33,8 @@ let getStoredProjects = () =>
 const SyncLocally = () => localStorage.setItem("projects", JSON.stringify(projects));
 
 let projects = getStoredProjects();
+
+window.addEventListener("click", () => console.log(projects));
 
 const Checklist = (name, checked) =>
 {
@@ -39,7 +48,14 @@ const Project = function(name, description, dueDate, priority, checklist)
 
 	const AddChecklistToArray = () =>
 	{
-		let _check = Checklist("Name", false);
+		let name;
+		const nameArrayLength = _.filter(checklist, check => check.name.match(/^Name(\d)*$/gm)).length;
+		
+		// Checks if check with name "Name" exists if it does create check with name of "Name" plus length if names array
+		if (nameArrayLength === 0) name = "Name";
+		else name = `Name${nameArrayLength}`;
+
+		let _check = Checklist(name, false);
 		checklist.push(_check);
 		return _check;
 	};
@@ -216,15 +232,21 @@ const Interface = (() =>
 		e.stopPropagation();
 		e.target.parentElement.remove();
 		projects.splice(e.target.parentElement.dataset.index, 1);
-		SyncIndexes();
+		SyncProjectIndexes();
 		SyncLocally();
 	};
 
 	// Gets the projects DOM and loops through them assigning the index dataset by name
-	const SyncIndexes = () =>
+	const SyncProjectIndexes = () =>
 	{
 		const _projectsDOM = _.without([...document.querySelectorAll(".project")], document.querySelector("#add"));
 		_projectsDOM.forEach(_project => _project.dataset.index = projects.indexOf(_.find(projects, project => project.name === _project.firstChild.textContent)));
+	};
+
+	const SyncChecklistIndexes = project =>
+	{
+		const _checklistDOM = document.querySelectorAll(".checklist");
+		_checklistDOM.forEach(_check => _check.dataset.index = project.checklist.indexOf(_.find(project.checklist, check => check.name === _check.firstChild.lastChild.textContent)));
 	};
 
 	// Moves Projects in the DOM
@@ -262,7 +284,7 @@ const Interface = (() =>
 		projectAdd.addEventListener("click", () => AddProject());
 	})();
 
-	return { OutputProjectToDOM, SaveChangesToDOM };
+	return { OutputProjectToDOM, SaveChangesToDOM, SyncChecklistIndexes };
 })();
 
 const InfoBox = (() =>
@@ -428,14 +450,26 @@ const InfoBox = (() =>
 		{
 			const newP = document.createElement("p");
 			newP.textContent = pInput.value;
+			// Checks if input is a date and parses it correctly
 			if (pInput.parentElement.id === "dueDate") newP.textContent = format(parse(pInput.value, "yyyy-MM-dd", new Date()), "dd/MM/yyyy");
 
-			if (pInput.parentElement.classList.contains("checklist")) CreateEditButton(newP, project, true);
-			else CreateEditButton(newP, project, false);
-
-			if (pInput.parentElement.classList.contains("checklist")) pInput.parentElement.insertBefore(newP, pInput.parentElement.firstChild);
-			else pInput.parentElement.appendChild(newP);
-			pInput.remove();
+			if (pInput.parentElement.classList.contains("checklist"))
+			{
+				if (pInput.value === "")
+				{
+					project.checklist.splice(pInput.parentElement.dataset.index, 1);
+					pInput.parentElement.remove();
+					Interface.SyncChecklistIndexes(project);
+				}
+				CreateEditButton(newP, project, true);
+				pInput.parentElement.insertBefore(newP, pInput.parentElement.firstChild);
+			}
+			else 
+			{
+				CreateEditButton(newP, project, false);
+				pInput.parentElement.appendChild(newP);
+			}
+			if(pInput) pInput.remove();
 
 			CreateSaveButton(project);
 		};
@@ -446,7 +480,7 @@ const InfoBox = (() =>
 		// Checks for enter key to confirm changes to info box
 		pInput.addEventListener("keyup", (e) =>
 		{
-			if (e.keyCode === 13) ConfirmChanges();
+			if (e.keyCode === 13) pInput.blur();
 		});
 
 		pInput.addEventListener("focusout", () => ConfirmChanges());
@@ -516,6 +550,7 @@ const InfoBox = (() =>
 	const CreateChecklistItem = (project) =>
 	{
 		let _check = project.AddChecklistToArray();
+		console.log(project);
 
 		const div = document.createElement("div");
 		div.classList.add("info-box", "checklist");
