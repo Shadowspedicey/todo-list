@@ -420,6 +420,7 @@ const InfoBox = (() =>
 		}
 		if (element.parentElement.classList.contains("checklist")) element.parentElement.insertBefore(pInput, element.parentElement.firstChild);
 		else element.parentElement.appendChild(pInput);
+		pInput.focus();
 		element.remove();
 
 		// Creates the p element and fills it with the value of the input and appends it while creating and edit button
@@ -439,21 +440,16 @@ const InfoBox = (() =>
 			CreateSaveButton(project);
 		};
 
-		if (pInput.parentElement.id === "dueDate" || pInput.parentElement.id === "priority") return pInput.addEventListener("change", () => ConfirmChanges());
-
+		if (pInput.parentElement.id === "dueDate" || pInput.parentElement.id === "priority") 
+			return pInput.addEventListener("change", () => ConfirmChanges());
 
 		// Checks for enter key to confirm changes to info box
 		pInput.addEventListener("keyup", (e) =>
 		{
 			if (e.keyCode === 13) ConfirmChanges();
 		});
-		document.querySelector("#info-box").addEventListener("click", (e) =>
-		{
-			e.stopPropagation();
-			const inputs = _.without(document.querySelectorAll("input"), ...document.querySelectorAll("input[type=checkbox]"));
-			if (inputs.length !== 0 && e.target.tagName !== "INPUT" && e.target.tagName !== "SPAN") ConfirmChanges();
-		});
 
+		pInput.addEventListener("focusout", () => ConfirmChanges());
 	};
 
 	const Save = (project) =>
