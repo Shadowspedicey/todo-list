@@ -3,6 +3,7 @@ import { format, differenceInDays, parse, parseISO } from "date-fns";
 import arrayMove from "array-move";
 import isMobile from "is-mobile";
 import fitText from "./fit-text.js";
+import DarkMode from "./dark-mode.js";
 
 //localStorage.removeItem("projects");
 
@@ -310,6 +311,8 @@ const InfoBox = (() =>
 		infoContainer.id = "info-container";
 
 		const infoBox = document.createElement("div");
+		if (DarkMode.on) infoBox.classList.add("info-box-dark");
+		console.log(DarkMode.on);
 		infoBox.id = "info-box";
 
 		const mainInfo = document.createElement("div");
@@ -628,3 +631,5 @@ const InfoBox = (() =>
 		hiddenElements.forEach(element => element.classList.remove("hidden"));
 	}
 })();
+
+DarkMode.On();

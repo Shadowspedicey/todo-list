@@ -12,7 +12,7 @@
 	box-shadow: 0 0 20px 5px hsl(0, 0%, 10%) !important;
 }
 
-.project-dark > span
+.project-dark > .material-icons, .sort-dark
 {
 	background-color: hsl(60, 3%, 10%)!important;
 
@@ -20,7 +20,7 @@
 
 	border: 1px solid hsl(60, 3%, 20%) !important;
 }
-.project-dark > span:hover
+.project-dark > .material-icons:hover, .sort-dark:hover
 {
 	background-color: hsl(60, 3%, 15%) !important;
 }
