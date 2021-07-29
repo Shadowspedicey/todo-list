@@ -105,7 +105,6 @@ const Interface = (() =>
 
 		const remainingDays = document.createElement("h2");
 		remainingDays.textContent = "Remaining Days:";
-		dateDiv.appendChild(remainingDays);
 
 		const daysLeft = document.createElement("h2");
 		const nOfDaysLeft = differenceInDays(project.dueDate, new Date());
@@ -172,7 +171,12 @@ const Interface = (() =>
 
 		_projectsDiv.insertBefore(projectDOM, document.querySelector("#add"));
 
-		fitText(5, name.parentElement, name, remainingDays);
+		// Fits name to project if overflowing
+		fitText(1.75, name.parentElement, name);
+
+		// Inserts "Remaining Days" and fits it separately from name
+		dateDiv.insertBefore(remainingDays, dateDiv.firstChild);
+		fitText(5, projectDOM, remainingDays);
 
 		projectDOM.addEventListener("click", () => InfoBox.Create(project));
 	};
@@ -208,7 +212,7 @@ const Interface = (() =>
 		const progressBar = projectDOM.children[2];
 
 		header.textContent = project.name;
-		//fitText(header, header.parentElement, 2.5);
+		fitText(1.75, header.parentElement, header);
 
 		const nOfDaysLeft = differenceInDays(project.dueDate, new Date());
 		if (nOfDaysLeft > 0 || nOfDaysLeft === 0) daysLeft.textContent = nOfDaysLeft;
