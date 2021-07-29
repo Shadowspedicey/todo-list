@@ -125,6 +125,7 @@ const Interface = (() =>
 		projectDOM.appendChild(progressBar);
 		SetProgressBar(progressBar, project);
 
+		// Adds close button
 		(() =>
 		{
 			const close = document.createElement("span");
@@ -140,6 +141,7 @@ const Interface = (() =>
 			projectDOM.addEventListener("mouseout", () => close.classList.add("hidden"));
 		})();
 
+		// Adds sort buttons
 		(() =>
 		{
 			const sortDiv = document.createElement("div");

@@ -5,8 +5,7 @@ export default function fitText(rate, parent, ...texts)
 		return element.scrollWidth > element.clientWidth;
 	}
 
-	let fontSize;
-	(() =>
+	let fontSize = (() =>
 	{
 		let total = 0;
 		for (let i = 0; i < texts.length; i++)
@@ -14,7 +13,7 @@ export default function fitText(rate, parent, ...texts)
 			total += parseFloat(window.getComputedStyle(texts[i], null).getPropertyValue("font-size"));
 		}
 		
-		fontSize = total / texts.length;
+		return total / texts.length;
 	})();
 
 	while (isOverflown(parent))
