@@ -302,6 +302,11 @@ const InfoBox = (() =>
 	const Create = (project) =>
 	{
 		const infoContainer = document.createElement("div");
+
+		// Sets and unsets "hidden" class quickly to get an animation
+		infoContainer.classList.add("hidden");
+		window.setTimeout(() => infoContainer.classList = "", 0);
+
 		infoContainer.id = "info-container";
 
 		const infoBox = document.createElement("div");
