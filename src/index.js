@@ -169,7 +169,8 @@ const Interface = (() =>
 		})();
 
 		_projectsDiv.insertBefore(projectDOM, document.querySelector("#add"));
-		fitText(remainingDays, projectDOM, 5);
+
+		fitText(5, name.parentElement, name, remainingDays);
 
 		projectDOM.addEventListener("click", () => InfoBox.Create(project));
 	};
@@ -205,6 +206,7 @@ const Interface = (() =>
 		const progressBar = projectDOM.children[2];
 
 		header.textContent = project.name;
+		//fitText(header, header.parentElement, 2.5);
 
 		const nOfDaysLeft = differenceInDays(project.dueDate, new Date());
 		if (nOfDaysLeft > 0 || nOfDaysLeft === 0) daysLeft.textContent = nOfDaysLeft;

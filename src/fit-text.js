@@ -1,15 +1,25 @@
-export default function fitText(text, parent, rate)
+export default function fitText(rate, parent, ...texts)
 {
 	function isOverflown(element) 
 	{
-		return element.scrollHeight > element.clientHeight || element.scrollWidth > element.clientWidth;
+		return element.scrollWidth > element.clientWidth;
 	}
 
-	let fontsize = parseFloat(window.getComputedStyle(text, null).getPropertyValue("font-size"));
+	let fontSize;
+	(() =>
+	{
+		let total = 0;
+		for (let i = 0; i < texts.length; i++)
+		{
+			total += parseFloat(window.getComputedStyle(texts[i], null).getPropertyValue("font-size"));
+		}
+		
+		fontSize = total / texts.length;
+	})();
 
 	while (isOverflown(parent))
 	{
-		fontsize -= rate;
-		text.style.fontSize = fontsize + "px";
+		fontSize -= rate;
+		texts.forEach(text => text.style.fontSize = fontSize + "px");
 	}
 }
