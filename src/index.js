@@ -539,7 +539,11 @@ const InfoBox = (() =>
 		SyncLocally();
 	};
 
-	const Close = () => document.querySelector("#info-container").remove();
+	const Close = () => 
+	{
+		document.querySelector("#info-container").classList.add("hidden");
+		window.setTimeout(() => document.querySelector("#info-container").remove(), 125);
+	};
 
 	// Create the edit button and adds event listeners to icon parent and passed the project
 	const CreateEditButton = (p, project, before) =>
