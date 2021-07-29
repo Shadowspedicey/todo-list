@@ -2,10 +2,11 @@ import _ from "lodash";
 import { format, differenceInDays, parse, parseISO } from "date-fns";
 import arrayMove from "array-move";
 import isMobile from "is-mobile";
+import fitText from "./fit-text.js";
 
 //localStorage.removeItem("projects");
 
-//Gets "projects" from localStorage and sets the date accordingly and attaches a function
+// Gets "projects" from localStorage and sets the date accordingly and attaches a function
 let getStoredProjects = () =>
 {
 	const _storage = JSON.parse(localStorage.getItem("projects"));
@@ -73,7 +74,7 @@ const Interface = (() =>
 		}
 	};
 
-	const OutputProjectToDOM = (project) =>
+	const OutputProjectToDOM = project =>
 	{
 		const _projectsDiv = document.querySelector("#projects");
 		const projectDOM = document.createElement("div");
@@ -84,12 +85,20 @@ const Interface = (() =>
 		name.textContent = project.name;
 		projectDOM.appendChild(name);
 
-		const date = document.createElement("h2");
-		date.textContent = `Due Date:${format(project.dueDate, "dd/M/yyyy")}`;
+		const dateDiv = document.createElement("div");
 
 		const remainingDays = document.createElement("h2");
-		remainingDays.textContent = `Remaining Days: ${differenceInDays(project.dueDate, new Date())}`;
-		projectDOM.appendChild(remainingDays);
+		remainingDays.textContent = "Remaining Days:";
+		dateDiv.appendChild(remainingDays);
+
+		const daysLeft = document.createElement("h2");
+		const nOfDaysLeft = differenceInDays(project.dueDate, new Date());
+		if (nOfDaysLeft > 0 || nOfDaysLeft === 0) daysLeft.textContent = nOfDaysLeft;
+		else if (project.progress === 100) daysLeft.textContent = "Completed";
+		else daysLeft.textContent = "Failed";
+		dateDiv.appendChild(daysLeft);
+
+		projectDOM.appendChild(dateDiv);
 
 		const progressBar = document.createElement("span");
 		progressBar.classList.add("progress-bar");
@@ -144,6 +153,7 @@ const Interface = (() =>
 		})();
 
 		_projectsDiv.insertBefore(projectDOM, document.querySelector("#add"));
+		fitText(remainingDays, projectDOM, 5);
 
 		projectDOM.addEventListener("click", () => InfoBox.Create(project));
 	};
@@ -157,7 +167,8 @@ const Interface = (() =>
 			{
 				for (let i = 0; i < _projectsDOM.length; i++)
 				{
-					if (_projectsDOM[i].dataset.index === projects.indexOf(_project)) return true;
+					// eslint-disable-next-line eqeqeq
+					if (_projectsDOM[i].dataset.index == projects.indexOf(_project)) return true;
 				}
 				return false;
 			};
@@ -174,12 +185,15 @@ const Interface = (() =>
 	{
 		const projectDOM = document.querySelector(`[data-index="${projects.indexOf(project)}"]`);
 		const header = projectDOM.children[0];
-		const remainingDays = projectDOM.children[1];
+		const daysLeft = projectDOM.children[1].children[1];
 		const progressBar = projectDOM.children[2];
 
 		header.textContent = project.name;
 
-		remainingDays.textContent = `Remaining Days: ${differenceInDays(project.dueDate, new Date())}`;
+		const nOfDaysLeft = differenceInDays(project.dueDate, new Date());
+		if (nOfDaysLeft > 0 || nOfDaysLeft === 0) daysLeft.textContent = nOfDaysLeft;
+		else if (project.progress === 100) daysLeft.textContent = "Completed";
+		else daysLeft.textContent = "Failed";
 
 		SetProgressBar(progressBar, project);
 	};
@@ -188,7 +202,8 @@ const Interface = (() =>
 	{
 		let name;
 		const nameArrayLength = _.filter(projects, project => project.name.includes("Name") && project.defaultProject === true).length;
-		//checks if object with name "Name" exists if it does create object with name of "Name" plus length if names array
+		
+		// Checks if object with name "Name" exists if it does create object with name of "Name" plus length if names array
 		if (nameArrayLength === 0) name = "Name";
 		else name = `Name${nameArrayLength}`;
 
@@ -205,14 +220,14 @@ const Interface = (() =>
 		SyncLocally();
 	};
 
-	//gets the projects DOM and loops through them assigning the index dataset by name
+	// Gets the projects DOM and loops through them assigning the index dataset by name
 	const SyncIndexes = () =>
 	{
 		const _projectsDOM = _.without([...document.querySelectorAll(".project")], document.querySelector("#add"));
 		_projectsDOM.forEach(_project => _project.dataset.index = projects.indexOf(_.find(projects, project => project.name === _project.firstChild.textContent)));
 	};
 
-	//Moves Projects in the DOM
+	// Moves Projects in the DOM
 	const SortProject = (e, element, left, project) =>
 	{
 		e.stopPropagation();
@@ -240,7 +255,7 @@ const Interface = (() =>
 		SyncLocally();
 	};
 
-	//Adds even listener on the add project button
+	// Adds even listener on the add project button
 	(() =>
 	{
 		const projectAdd = document.querySelector("#add");
@@ -265,7 +280,7 @@ const InfoBox = (() =>
 		const mainInfo = document.createElement("div");
 		mainInfo.id = "main-info";
 
-		//Creates the info fields through a loop
+		// Creates the info fields through a loop
 		(() =>
 		{
 			const _properties = ["name", "description", "dueDate", "priority"];
@@ -292,7 +307,7 @@ const InfoBox = (() =>
 		})();
 		infoBox.appendChild(mainInfo);
 
-		//Creates the side info div and appends every checklist obj in project
+		// Creates the side info div and appends every checklist obj in project
 		(() =>
 		{
 			const sideInfo = document.createElement("div");
@@ -307,14 +322,14 @@ const InfoBox = (() =>
 			header.appendChild(h1);
 			sideInfo.appendChild(header);
 
-			//Adds the add checklist button
+			// Adds the add checklist button
 			const addDiv = document.createElement("div");
 			addDiv.id = "checklist-add";
 			addDiv.textContent = "+";
 			addDiv.addEventListener("click", () => CreateChecklistItem(project));
 			sideInfo.appendChild(addDiv);
 
-			//Adds the checklist
+			// Adds the checklist
 			(() =>
 			{
 				for (let i = 0; i < project.checklist.length; i++)
@@ -347,7 +362,7 @@ const InfoBox = (() =>
 			infoBox.appendChild(sideInfo);
 		})();
 
-		//Adds close button
+		// Adds close button
 		(() =>
 		{
 			const close = document.createElement("span");
@@ -397,7 +412,7 @@ const InfoBox = (() =>
 				pInput.value = element.textContent;
 				break;
 
-			//Fallback to be able to edit checklist
+			// Fallback to be able to edit checklist
 			default:
 				pInput.type = "text";
 				pInput.value = element.lastChild.textContent;
@@ -407,7 +422,7 @@ const InfoBox = (() =>
 		else element.parentElement.appendChild(pInput);
 		element.remove();
 
-		//Creates the p element and fills it with the value of the input and appends it while creating and edit button
+		// Creates the p element and fills it with the value of the input and appends it while creating and edit button
 		const ConfirmChanges = () =>
 		{
 			const newP = document.createElement("p");
@@ -427,7 +442,7 @@ const InfoBox = (() =>
 		if (pInput.parentElement.id === "dueDate" || pInput.parentElement.id === "priority") return pInput.addEventListener("change", () => ConfirmChanges());
 
 
-		//Checks for enter key to confirm changes to info box
+		// Checks for enter key to confirm changes to info box
 		pInput.addEventListener("keyup", (e) =>
 		{
 			if (e.keyCode === 13) ConfirmChanges();
@@ -443,7 +458,7 @@ const InfoBox = (() =>
 
 	const Save = (project) =>
 	{
-		//Saves info fields and date
+		// Saves info fields and date
 		(() =>
 		{
 			const _infoBoxes = _.without([...document.querySelectorAll(".info-box")], document.querySelector("#checklist-header"), ...document.querySelectorAll(".checklist"));
@@ -454,18 +469,20 @@ const InfoBox = (() =>
 			}
 		})();
 
-		//Saves Checklist
+		// Saves Checklist
 		(() =>
 		{
 			const _checklistDOM = _.without([...document.querySelectorAll(".checklist")], document.querySelector("#checklist-header"));
 			for (let i = 0; i < _checklistDOM.length; i++)
 			{
-				let _element = _.find(_checklistDOM, element => element.dataset.index === i);
+				// eslint-disable-next-line eqeqeq
+				let _element = _.find(_checklistDOM, element => element.dataset.index == i);
 				project.checklist[i].name = _element.querySelector("p").lastChild.textContent;
+				console.log(projects);
 			}
 		})();
 		
-		//Calculates progress and saves it
+		// Calculates progress and saves it
 		(() =>
 		{
 			if (project.checklist.length === 0) return;
@@ -473,18 +490,15 @@ const InfoBox = (() =>
 			project.progress = (_checkedTemp.length / project.checklist.length) * 100;
 		})();
 
-		//Changes the info on the project DOM accordingly
+		// Changes the info on the project DOM accordingly
 		Interface.SaveChangesToDOM(project);
 
 		SyncLocally();
 	};
 
-	const Close = () =>
-	{
-		document.querySelector("#info-container").remove();
-	};
+	const Close = () => document.querySelector("#info-container").remove();
 
-	//Create the edit button and adds event listeners to icon parent and passed the project
+	// Create the edit button and adds event listeners to icon parent and passed the project
 	const CreateEditButton = (p, project, before) =>
 	{
 		const icon = document.createElement("span");
@@ -502,7 +516,7 @@ const InfoBox = (() =>
 		})();
 	};
 
-	//Creats a checklist item and appends it to side info
+	// Creats a checklist item and appends it to side info
 	const CreateChecklistItem = (project) =>
 	{
 		let _check = project.AddChecklistToArray();
@@ -524,7 +538,7 @@ const InfoBox = (() =>
 		input.addEventListener("change", () =>
 		{
 			_check.checked = input.checked;
-			Save();
+			Save(project);
 		});
 		div.appendChild(input);
 

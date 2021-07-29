@@ -57,6 +57,7 @@ html, body
 .project h2
 {
 	font-family: sans-serif;
+	white-space: nowrap;
 
 	margin: 0;
 }
