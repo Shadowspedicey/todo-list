@@ -1,3 +1,25 @@
+#dark-mode
+{
+	color: lightgray;
+
+	transform: scale(3);
+	cursor: pointer;
+	transition: transform 200ms ease-in-out;
+
+	position: absolute;
+	top: 3rem;
+	right: 3rem;
+}
+#dark-mode:hover
+{
+	transform: scale(3.5);
+}
+
+.dark-mode-dark
+{
+	color: lightgray !important;
+}
+
 .content-dark
 {
 	background: linear-gradient(90deg, hsl(60, 3%, 10%), hsl(60, 4%, 15%), hsl(60, 3%, 10%)) !important;
@@ -39,4 +61,9 @@
 .info-box-dark > span:hover
 {
 	background-color: hsl(60, 3%, 15%) !important;
+}
+
+.info-box-dark input
+{
+	color: lightgray;
 }
