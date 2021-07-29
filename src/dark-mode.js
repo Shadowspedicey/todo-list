@@ -6,6 +6,8 @@ const DarkMode = (() =>
 	{
 		DarkMode.on = true;
 
+		document.querySelector("#dark-mode").querySelector("span").classList.add("dark-mode-dark");
+
 		document.querySelector("#content").classList.add("content-dark");
 
 		document.querySelectorAll(".project").forEach(project => project.classList.add("project-dark"));
@@ -16,6 +18,8 @@ const DarkMode = (() =>
 	const Off = () =>
 	{
 		DarkMode.on = false;
+
+		document.querySelector("#dark-mode").querySelector("span").classList.remove("dark-mode-dark");
 
 		document.querySelector("#content").classList.remove("content-dark");
 

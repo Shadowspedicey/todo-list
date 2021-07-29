@@ -632,4 +632,11 @@ const InfoBox = (() =>
 	}
 })();
 
-DarkMode.On();
+(() =>
+{
+	document.querySelector("#dark-mode").addEventListener("click", () =>
+	{
+		if (DarkMode.on) DarkMode.Off();
+		else DarkMode.On();
+	});
+})();
