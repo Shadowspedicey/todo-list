@@ -1,0 +1,42 @@
+.content-dark
+{
+	background: linear-gradient(90deg, hsl(60, 3%, 10%), hsl(60, 4%, 15%), hsl(60, 3%, 10%)) !important;
+}
+
+.project-dark
+{
+	background: linear-gradient(to bottom, hsl(60, 4%, 15%), hsl(0, 0%, 5%)) !important;
+
+	color: lightgray !important;
+
+	box-shadow: 0 0 20px 5px hsl(0, 0%, 10%) !important;
+}
+
+.project-dark > span
+{
+	background-color: hsl(60, 3%, 10%)!important;
+
+	color: lightgray !important;
+
+	border: 1px solid hsl(60, 3%, 20%) !important;
+}
+.project-dark > span:hover
+{
+	background-color: hsl(60, 3%, 15%) !important;
+}
+
+.info-box-dark
+{
+	background: linear-gradient(to right, hsl(60, 4%, 15%), hsl(0, 0%, 12.5%) 80% 100%) !important;
+
+	color: lightgray !important;
+}
+
+.info-box-dark > span
+{
+	border: 1px solid hsl(60, 3%, 20%) !important;
+}
+.info-box-dark > span:hover
+{
+	background-color: hsl(60, 3%, 15%) !important;
+}
