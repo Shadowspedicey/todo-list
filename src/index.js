@@ -96,6 +96,7 @@ const Interface = (() =>
 		const _projectsDiv = document.querySelector("#projects");
 		const projectDOM = document.createElement("div");
 		projectDOM.classList.add("project");
+		if (DarkMode.on) projectDOM.classList.add("project-dark");
 		projectDOM.dataset.index = projects.indexOf(project);
 
 		const name = document.createElement("h2");
