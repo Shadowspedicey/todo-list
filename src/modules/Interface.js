@@ -7,7 +7,7 @@ import Project from "../factories/Project";
 import projects, { SyncLocally, setProjects } from "./projects";
 import InfoBox from "./InfoBox";
 import fitText from "./fit-text";
-import DarkMode from "./dark-mode";
+import DarkMode from "../dark-mode";
 
 const Interface = (() =>
 {
@@ -147,7 +147,6 @@ const Interface = (() =>
 			SyncLocally();
 		});
 	};
-	PrintArrayToDOM();
 
 	const SaveChangesToDOM = (project) =>
 	{

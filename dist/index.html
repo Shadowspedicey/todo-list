@@ -12,12 +12,27 @@
 	</head>
 	<body>
 		<div id="content">
+			<div id="login-page">
+				<div id="login-window">
+					<form novalidate id="login-form">
+						<div class="input-box">
+							<label for="email">Email:</label>
+							<input type="text" id="email" name="email" minlength="3" placeholder="myemail@site.com">
+						</div>
+						<div class="input-box">
+							<label for="password">Password:</label>
+							<input type="password" id="password" name="password" minlength="8">
+						</div>
+						<button id="login-button" style="align-self: center">Create Account</button>
+					</form>
+				</div>
+			</div>
 			<div id="dark-mode">
 				<span style="color: black" class="material-icons">dark_mode</span>
 			</div>
-			<div id="projects">
+			<!-- <div id="projects">
 				<div class="project" id="add"><span>+</span></div>
-			</div>
+			</div> -->
 		</div>
 		<script src="./main.js"></script>
 	</body>

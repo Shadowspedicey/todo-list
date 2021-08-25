@@ -2,6 +2,7 @@ import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
 
+import "./AuthForm";
 import isMobile from "is-mobile";
 import DarkMode from "./dark-mode.js";
 

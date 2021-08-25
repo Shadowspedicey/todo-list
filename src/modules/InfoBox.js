@@ -4,7 +4,7 @@ import isMobile from "is-mobile";
 
 import Interface from "./Interface";
 import { SyncLocally } from "./projects";
-import DarkMode from "./dark-mode";
+import DarkMode from "../dark-mode";
 
 const InfoBox = (() =>
 {
@@ -166,7 +166,7 @@ const InfoBox = (() =>
 				pInput.value = element.lastChild.textContent;
 				break;
 		}
-		
+
 		if (element.parentElement.classList.contains("checklist")) element.parentElement.insertBefore(pInput, element.parentElement.firstChild);
 		else element.parentElement.appendChild(pInput);
 		pInput.focus();

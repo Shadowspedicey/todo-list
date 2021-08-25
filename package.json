@@ -1,6 +1,6 @@
 {
   "name": "todo-list",
-	"homepage": "https://shadowspedicey.github.io/todo-list/",
+  "homepage": "https://shadowspedicey.github.io/todo-list/",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.14.8",
+    "@babel/plugin-transform-async-to-generator": "^7.14.5",
     "@babel/preset-env": "^7.14.8",
     "babel-loader": "^8.2.2",
     "eslint": "^7.31.0",
