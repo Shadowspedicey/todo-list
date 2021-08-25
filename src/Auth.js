@@ -1,15 +1,63 @@
-import "regenerator-runtime/runtime";
-import firebase from "firebase/app";
-import "firebase/auth";
+import Interface from "./modules/Interface";
+import { initProjects } from "./modules/projects";
 
-const form = document.querySelector("#login-form");
-form.addEventListener("submit", (e) =>
+export const loginPage = { create: () =>
 {
-	e.preventDefault();
-	const credentials = checkForm();
-	if (credentials)
-		login(credentials.email, credentials.password);
-});
+	const loginPage = document.createElement("div");
+	loginPage.id = "login-page";
+
+	const loginWindow = document.createElement("div");
+	loginWindow.id = "login-window";
+
+	const loginForm = document.createElement("form");
+	loginForm.id = "login-form";
+	loginForm.noValidate = true;
+	loginForm.addEventListener("submit", (e) =>
+	{
+		e.preventDefault();
+		const credentials = checkForm();
+		if (credentials)
+			login(credentials.email, credentials.password);
+	});
+
+	const inputBox = document.createElement("div");
+	inputBox.classList.add("input-box");
+	const emailLabel = document.createElement("label");
+	emailLabel.textContent = "Email:";
+	emailLabel.htmlFor = "email";
+	const emailInput = document.createElement("input");
+	emailInput.id = "email";
+	emailInput.name = "email";
+	emailInput.placeholder = "myemail@site.com";
+	emailInput.addEventListener("focusout", checkEmail);
+	inputBox.appendChild(emailLabel);
+	inputBox.appendChild(emailInput);
+
+	const inputBox2 = document.createElement("div");
+	inputBox2.classList.add("input-box");
+	const passwordLabel = document.createElement("label");
+	passwordLabel.textContent = "Password:";
+	passwordLabel.htmlFor = "password";
+	const passwordInput = document.createElement("input");
+	passwordInput.type = "password";
+	passwordInput.id = "password";
+	passwordInput.name = "password";
+	passwordInput.addEventListener("focusout", checkPassword);
+	inputBox2.appendChild(passwordLabel);
+	inputBox2.appendChild(passwordInput);
+
+	const formButton = document.createElement("button");
+	formButton.textContent = "Login/Create Account";
+	formButton.id = "login-button";
+	formButton.style = "align-self: center";
+
+	loginForm.appendChild(inputBox);
+	loginForm.appendChild(inputBox2);
+	loginForm.appendChild(formButton);
+	loginWindow.appendChild(loginForm);
+	loginPage.appendChild(loginWindow);
+	document.querySelector("#content").insertBefore(loginPage, document.querySelector("#content").firstChild);
+}};
 
 const checkForm = () =>
 {
@@ -23,7 +71,10 @@ const login = async (email, password) =>
 	try
 	{
 		await firebase.auth().signInWithEmailAndPassword(email, password);
-		console.log(!!firebase.auth().currentUser);
+		if (!firebase.auth().currentUser) return;
+		document.querySelector("#login-page").remove();
+		await initProjects();
+		Interface.DisplayInterface();
 	}
 	catch (error)
 	{
@@ -37,10 +88,14 @@ const login = async (email, password) =>
 				try
 				{
 					firebase.auth().createUserWithEmailAndPassword(email, password);
+					if (!firebase.auth().currentUser) return;
+					document.querySelector("#login-page").remove();
+					initProjects();
+					Interface.DisplayInterface();
 				}
 				catch (error)
 				{
-					console.log("registering", error);
+					return console.log("registering", error);
 				}
 			}
 			else return;
@@ -51,11 +106,9 @@ const login = async (email, password) =>
 			const error = document.createElement("span");
 			error.classList.add("error", "login");
 			error.textContent = "Wrong password or wrong email";
-			loginWindow.insertBefore(error, loginWindow.firstChild);
+			return loginWindow.insertBefore(error, loginWindow.firstChild);
 		}
 	}
-	//const a7a = await firebase.auth().createUserWithEmailAndPassword(email, password);
-	//console.log(a7a);
 };
 
 const checkEmail = () =>
@@ -82,7 +135,7 @@ const checkPassword = () =>
 		else if (!password.value.match(/[A-Z]+/)) return throwError(password, "Must contain at least 1 uppercase letter");
 		else if (!password.value.match(/[a-z]+/)) return throwError(password, "Must contain at least 1 lower case letter");
 		else if (!password.value.match(/(\d)+/)) return throwError(password, "Must contain at least 1 number");
-		else if (!password.value.match(/[!@#$%^&*()_+-]+/)) throwError(password, "Must contain at least 1 special character");
+		else if (!password.value.match(/[!@#$%^&*()_+-]+/)) return throwError(password, "Must contain at least 1 special character");
 	}
 	return password.value;
 };

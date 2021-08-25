@@ -3,7 +3,7 @@ import { format, parse } from "date-fns";
 import isMobile from "is-mobile";
 
 import Interface from "./Interface";
-import { SyncLocally } from "./projects";
+import { SyncLocally, SyncWithCloud } from "./projects";
 import DarkMode from "../dark-mode";
 
 const InfoBox = (() =>
@@ -245,6 +245,7 @@ const InfoBox = (() =>
 		// Changes the info on the project DOM accordingly
 		Interface.SaveChangesToDOM(project);
 
+		if (firebase.auth().currentUser) return SyncWithCloud(firebase.auth().currentUser.uid);
 		SyncLocally();
 	};
 
@@ -300,6 +301,7 @@ const InfoBox = (() =>
 		div.appendChild(input);
 
 		document.querySelector("#side-info").insertBefore(div, document.querySelector("#checklist-add"));
+		if (firebase.auth().currentUser) return SyncWithCloud(firebase.auth().currentUser.uid);
 		SyncLocally();
 	};
 

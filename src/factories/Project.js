@@ -1,6 +1,6 @@
 import _ from "lodash";
 import Checklist from "./Checklist";
-import projects from "../projects";
+import projects from "../modules/projects";
 
 const Project = (name, description, dueDate, priority, checklist) =>
 {
@@ -22,7 +22,7 @@ const Project = (name, description, dueDate, priority, checklist) =>
 	};
 
 	const obj = { name, description, dueDate, priority, checklist, progress, defaultProject, AddChecklistToArray };
-	if (!_.find(projects, project => project === obj)) projects.push(obj);
+	if (!_.find(projects(), project => project === obj)) projects().push(obj);
 	return obj;
 };
 

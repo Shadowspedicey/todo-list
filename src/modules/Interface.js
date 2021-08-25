@@ -1,16 +1,34 @@
-import _ from "lodsh";
+import _ from "lodash";
 import { differenceInDays } from "date-fns";
 import isMobile from "is-mobile";
 import arrayMove from "array-move";
 
 import Project from "../factories/Project";
-import projects, { SyncLocally, setProjects } from "./projects";
+import projects, { SyncLocally, SyncWithCloud, setProjects } from "./projects";
 import InfoBox from "./InfoBox";
 import fitText from "./fit-text";
 import DarkMode from "../dark-mode";
 
 const Interface = (() =>
 {
+	const DisplayInterface = () =>
+	{
+		const projects = document.createElement("div");
+		projects.id = "projects";
+		const add = document.createElement("div");
+		add.id = "add";
+		add.classList.add("project");
+		add.addEventListener("click", () => AddProject());
+		const plus = document.createElement("span");
+		plus.textContent = "+";
+		add.appendChild(plus);
+		projects.appendChild(add);
+
+		document.querySelector("#content").appendChild(projects);
+
+		PrintArrayToDOM();
+	};
+
 	const SetProgressBar = (progressBar, project) =>
 	{
 		progressBar.firstChild.textContent = `${+Math.round(project.progress)}%`;
@@ -40,7 +58,7 @@ const Interface = (() =>
 		const projectDOM = document.createElement("div");
 		projectDOM.classList.add("project");
 		if (DarkMode.on) projectDOM.classList.add("project-dark");
-		projectDOM.dataset.index = projects.indexOf(project);
+		projectDOM.dataset.index = projects().indexOf(project);
 
 		const name = document.createElement("h2");
 		name.textContent = project.name;
@@ -128,15 +146,16 @@ const Interface = (() =>
 
 	const PrintArrayToDOM = () =>
 	{
+		console.log(projects());
 		const _projectsDOM = _.without([...document.querySelectorAll(".project")], document.querySelector("#add"));
-		projects.forEach(_project =>
+		projects().forEach(_project =>
 		{
 			let doesProjectExist = () =>
 			{
 				for (let i = 0; i < _projectsDOM.length; i++)
 				{
 					// eslint-disable-next-line eqeqeq
-					if (_projectsDOM[i].dataset.index == projects.indexOf(_project)) return true;
+					if (_projectsDOM[i].dataset.index == projects().indexOf(_project)) return true;
 				}
 				return false;
 			};
@@ -144,13 +163,14 @@ const Interface = (() =>
 
 			OutputProjectToDOM(_project);
 
+			if (firebase.auth().currentUser) return SyncWithCloud(firebase.auth().currentUser.uid);
 			SyncLocally();
 		});
 	};
 
 	const SaveChangesToDOM = (project) =>
 	{
-		const projectDOM = document.querySelector(`[data-index="${projects.indexOf(project)}"]`);
+		const projectDOM = document.querySelector(`[data-index="${projects().indexOf(project)}"]`);
 		const header = projectDOM.children[0];
 		const daysLeft = projectDOM.children[1].children[1];
 		const progressBar = projectDOM.children[2];
@@ -169,7 +189,7 @@ const Interface = (() =>
 	const AddProject = () =>
 	{
 		let name;
-		const nameArrayLength = _.filter(projects, project => project.name.includes("Name") && project.defaultProject === true).length;
+		const nameArrayLength = _.filter(projects(), project => project.name.includes("Name") && project.defaultProject === true).length;
 		
 		// Checks if object with name "Name" exists if it does create object with name of "Name" plus length if names array
 		if (nameArrayLength === 0) name = "Name";
@@ -183,8 +203,9 @@ const Interface = (() =>
 	{
 		e.stopPropagation();
 		e.target.parentElement.remove();
-		projects.splice(e.target.parentElement.dataset.index, 1);
+		projects().splice(e.target.parentElement.dataset.index, 1);
 		SyncProjectIndexes();
+		if (firebase.auth().currentUser) return SyncWithCloud(firebase.auth().currentUser.uid);
 		SyncLocally();
 	};
 
@@ -192,7 +213,7 @@ const Interface = (() =>
 	const SyncProjectIndexes = () =>
 	{
 		const _projectsDOM = _.without([...document.querySelectorAll(".project")], document.querySelector("#add"));
-		_projectsDOM.forEach(_project => _project.dataset.index = projects.indexOf(_.find(projects, project => project.name === _project.firstChild.textContent)));
+		_projectsDOM.forEach(_project => _project.dataset.index = projects().indexOf(_.find(projects(), project => project.name === _project.firstChild.textContent)));
 	};
 
 	const SyncChecklistIndexes = project =>
@@ -211,7 +232,7 @@ const Interface = (() =>
 			if(element.previousElementSibling) 
 			{
 				element.parentNode.insertBefore(element, element.previousElementSibling);
-				setProjects(arrayMove(projects, projects.indexOf(project), projects.indexOf(project) - 1));
+				setProjects(arrayMove(projects(), projects().indexOf(project), projects().indexOf(project) - 1));
 			}
 		};
 
@@ -220,23 +241,17 @@ const Interface = (() =>
 			if(element.nextElementSibling && element.nextElementSibling !== document.querySelector("#add")) 
 			{
 				element.parentNode.insertBefore(element.nextElementSibling, element);
-				setProjects(arrayMove(projects, projects.indexOf(project), projects.indexOf(project) + 1));
+				setProjects(arrayMove(projects(), projects().indexOf(project), projects().indexOf(project) + 1));
 			}
 		};
 
 		left ? MoveLeft() : MoveRight();
 		
+		if (firebase.auth().currentUser) return SyncWithCloud(firebase.auth().currentUser.uid);
 		SyncLocally();
 	};
 
-	// Adds even listener on the add project button
-	(() =>
-	{
-		const projectAdd = document.querySelector("#add");
-		projectAdd.addEventListener("click", () => AddProject());
-	})();
-
-	return { OutputProjectToDOM, SaveChangesToDOM, SyncChecklistIndexes };
+	return { OutputProjectToDOM, SaveChangesToDOM, SyncChecklistIndexes, DisplayInterface };
 })();
 
 export default Interface;

@@ -1,8 +1,5 @@
-import firebase from "firebase/app";
-import "firebase/auth";
-import "firebase/firestore";
-
-import "./AuthForm";
+import "regenerator-runtime/runtime";
+import { loginPage } from "./Auth";
 import isMobile from "is-mobile";
 import DarkMode from "./dark-mode.js";
 
@@ -16,9 +13,10 @@ const firebaseConfig =
 	appId: "1:1016517839578:web:daf2dc32b1bf08c5cc73e3",
 	measurementId: "G-SBSFQDWGCG"
 };
-
 firebase.initializeApp(firebaseConfig);
 firebase.analytics();
+
+loginPage.create();
 
 (() =>
 {
