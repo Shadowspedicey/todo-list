@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import _ from "lodash";
 import { differenceInDays } from "date-fns";
 import isMobile from "is-mobile";

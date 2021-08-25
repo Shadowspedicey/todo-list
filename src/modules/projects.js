@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import _ from "lodash";
 import { parseISO } from "date-fns";
 import Checklist from "../factories/Checklist";

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import Interface from "./modules/Interface";
 import { initProjects } from "./modules/projects";
 

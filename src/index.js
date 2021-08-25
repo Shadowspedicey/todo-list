@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import "regenerator-runtime/runtime";
 import { loginPage } from "./Auth";
 import isMobile from "is-mobile";
