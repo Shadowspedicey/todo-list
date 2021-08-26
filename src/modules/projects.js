@@ -8,14 +8,17 @@ let projects;
 setTimeout(() => db = firebase.firestore(), 0);
 
 // Gets "projects" from localStorage and sets the date accordingly and attaches a function
-let getStoredProjects = async () =>
+let getStoredProjects = async storage =>
 {
-	const _storage = await db.collection(`${firebase.auth().currentUser.uid}`).doc("projects").get()
-		.then(doc => doc.exists ? doc.data() : {projects: []}).then(storage => storage.projects);
-	console.log(_storage);
+	let _storage;
+
+	if (storage === "cloud")
+		_storage = await db.collection(`${firebase.auth().currentUser.uid}`).doc("projects").get()
+			.then(doc => doc.exists ? doc.data() : {projects: []}).then(storage => storage.projects);
+
 	return new Promise(resolve =>
 	{
-		//const _storage = JSON.parse(localStorage.getItem("projects"));
+		if (storage === "local") _storage = JSON.parse(localStorage.getItem("projects"));
 		if (_storage == null) return [];
 		_storage.forEach(project =>
 		{
@@ -45,9 +48,9 @@ export const SyncLocally = () => localStorage.setItem("projects", JSON.stringify
 export const SyncWithCloud = uid => db.collection(`${uid}`)
 	.doc("projects").set({"projects": JSON.parse(JSON.stringify(projects))});
 
-export const initProjects = async () =>
+export const initProjects = async (storage) =>
 {
-	projects = await getStoredProjects();
+	projects = await getStoredProjects(storage);
 };
 
 export default () => projects;

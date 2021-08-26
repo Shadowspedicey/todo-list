@@ -1,8 +1,8 @@
 /* eslint-disable no-undef */
 import "regenerator-runtime/runtime";
-import { loginPage } from "./Auth";
 import isMobile from "is-mobile";
 import DarkMode from "./dark-mode.js";
+import StorageSelection from "./modules/StorageSelection.js";
 
 const firebaseConfig = 
 {
@@ -17,7 +17,9 @@ const firebaseConfig =
 firebase.initializeApp(firebaseConfig);
 firebase.analytics();
 
-loginPage.create();
+firebase.auth().signOut();
+
+StorageSelection.create("anim");
 
 (() =>
 {
