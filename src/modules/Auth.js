@@ -80,7 +80,7 @@ const login = async (email, password) =>
 	{
 		await firebase.auth().signInWithEmailAndPassword(email, password);
 		if (!firebase.auth().currentUser) return;
-		document.querySelector("#login-window").remove();
+		document.querySelector("#content").innerHTML = "";
 		await initProjects("cloud");
 		Interface.DisplayInterface();
 	}
@@ -95,10 +95,10 @@ const login = async (email, password) =>
 			{
 				try
 				{
-					firebase.auth().createUserWithEmailAndPassword(email, password);
+					await firebase.auth().createUserWithEmailAndPassword(email, password);
 					if (!firebase.auth().currentUser) return;
-					document.querySelector("#login-window").remove();
-					initProjects();
+					document.querySelector("#content").innerHTML = "";
+					await initProjects("cloud");
 					Interface.DisplayInterface();
 				}
 				catch (error)
