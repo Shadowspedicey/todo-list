@@ -16,7 +16,6 @@ const firebaseConfig =
 };
 firebase.initializeApp(firebaseConfig);
 firebase.analytics();
-
 firebase.auth().signOut();
 
 StorageSelection.create("anim");
