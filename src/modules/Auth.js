@@ -1,15 +1,21 @@
 /* eslint-disable no-undef */
-import Interface from "./modules/Interface";
-import { initProjects } from "./modules/projects";
+import Interface from "./Interface";
+import { initProjects } from "./projects";
+import StorageSelection from "./StorageSelection";
 
 export const loginPage = { create: () =>
 {
-	const loginPage = document.createElement("div");
-	loginPage.id = "login-page";
+	document.querySelector("#content").innerHTML = "";
 
 	const loginWindow = document.createElement("div");
 	loginWindow.id = "login-window";
 
+	const back = document.createElement("button");
+	back.id = "back-button";
+	back.innerHTML = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M24 12l-12-8v5h-12v6h12v5z'/></svg>";
+	back.addEventListener("click", StorageSelection.create);
+	loginWindow.appendChild(back);
+	
 	const loginForm = document.createElement("form");
 	loginForm.id = "login-form";
 	loginForm.noValidate = true;
@@ -56,8 +62,7 @@ export const loginPage = { create: () =>
 	loginForm.appendChild(inputBox2);
 	loginForm.appendChild(formButton);
 	loginWindow.appendChild(loginForm);
-	loginPage.appendChild(loginWindow);
-	document.querySelector("#content").insertBefore(loginPage, document.querySelector("#content").firstChild);
+	document.querySelector("#content").insertBefore(loginWindow, document.querySelector("#content").firstChild);
 }};
 
 const checkForm = () =>
@@ -73,8 +78,8 @@ const login = async (email, password) =>
 	{
 		await firebase.auth().signInWithEmailAndPassword(email, password);
 		if (!firebase.auth().currentUser) return;
-		document.querySelector("#login-page").remove();
-		await initProjects();
+		document.querySelector("#login-window").remove();
+		await initProjects("cloud");
 		Interface.DisplayInterface();
 	}
 	catch (error)
@@ -90,7 +95,7 @@ const login = async (email, password) =>
 				{
 					firebase.auth().createUserWithEmailAndPassword(email, password);
 					if (!firebase.auth().currentUser) return;
-					document.querySelector("#login-page").remove();
+					document.querySelector("#login-window").remove();
 					initProjects();
 					Interface.DisplayInterface();
 				}

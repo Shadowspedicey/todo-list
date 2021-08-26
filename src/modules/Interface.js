@@ -14,6 +14,8 @@ const Interface = (() =>
 {
 	const DisplayInterface = () =>
 	{
+		document.querySelector("#content").innerHTML = "";
+
 		const projects = document.createElement("div");
 		projects.id = "projects";
 		const add = document.createElement("div");
