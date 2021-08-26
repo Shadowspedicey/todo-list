@@ -22,7 +22,79 @@
 
 .content-dark
 {
-	background: linear-gradient(90deg, hsl(60, 3%, 10%), hsl(60, 4%, 15%), hsl(60, 3%, 10%)) !important;
+	background: linear-gradient(90deg, hsl(0, 0%, 7%), hsl(00, 0%, 15%), hsl(0, 0%, 7%)) !important;
+}
+
+.storage-dark
+{
+	background: linear-gradient(to bottom, hsl(0, 0%, 17.5%), hsl(0, 0%, 15%)) !important;
+	box-shadow: 0 0 20px 5px hsl(0, 0%, 10%) !important;
+}
+
+.storage-dark button
+{
+	color: lightgray;
+	background: linear-gradient(to bottom, hsl(0, 0%, 12.5%), hsl(0, 0%, 10%)) !important;
+	box-shadow: 0 0 20px 10px hsl(0, 0%, 15%) !important;
+}
+
+.storage-dark button:hover
+{
+	box-shadow: 0 0 25px 10px hsl(0, 0%, 17.5%) !important;
+}
+
+.storage-dark button img
+{
+	filter: invert(75%) sepia(0%) saturate(1181%) hue-rotate(319deg) brightness(106%) contrast(111%);
+}
+
+.login-dark
+{
+	background: linear-gradient(to bottom, hsl(0, 0%, 20%), hsl(0, 0%, 15%)) !important;
+
+	box-shadow: 0 0 20px 5px hsl(0, 0%, 10%) !important;
+}
+
+.login-dark svg
+{
+	filter: invert(75%) sepia(0%) saturate(1181%) hue-rotate(319deg) brightness(106%) contrast(111%);
+}
+
+.login-dark form label
+{
+	color: lightgray;
+}
+
+.login-dark form input
+{
+	background: hsl(0, 0%, 10%);
+
+	color: lightgray;
+	caret-color: lightgray;
+
+	border: 1px solid hsl(0, 0%, 30%);
+}
+
+.login-dark form input:-webkit-autofill 
+{
+	-webkit-text-fill-color: lightgray !important;
+	
+  box-shadow: 0 0 0px 1000px hsl(0, 0%, 10%) inset;
+  -webkit-box-shadow: 0 0 0px 1000px hsl(0, 0%, 10%) inset;
+}
+
+.login-dark form button
+{
+	background: hsl(0, 0%, 10%);
+
+	color: lightgray;
+
+	border: 1px solid hsl(0, 0%, 30%);
+}
+
+.login-dark form button:hover
+{
+	background: hsl(0, 0%, 15%);
 }
 
 .project-dark
@@ -56,11 +128,11 @@
 
 .info-box-dark > span
 {
-	border: 1px solid hsl(60, 3%, 20%) !important;
+	border: 1px solid hsl(00, 0%, 20%) !important;
 }
 .info-box-dark > span:hover
 {
-	background-color: hsl(60, 3%, 15%) !important;
+	background-color: hsl(0, 0%, 15%) !important;
 }
 
 .info-box-dark input
