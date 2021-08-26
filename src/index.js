@@ -30,4 +30,4 @@ StorageSelection.create("anim");
 	}
 })();
 
-(() => document.querySelector("#dark-mode").addEventListener("click", () => DarkMode.on = !DarkMode.on))();
+(() => document.querySelector("#dark-mode").addEventListener("click", () => DarkMode.on ? DarkMode.Off() : DarkMode.On()))();

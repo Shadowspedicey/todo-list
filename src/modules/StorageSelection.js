@@ -1,6 +1,7 @@
 import Interface from "./Interface";
 import { initProjects } from "./projects";
 import { loginPage } from "./Auth";
+import DarkMode from "../dark-mode";
 
 const StorageSelection = (() =>
 {
@@ -11,6 +12,7 @@ const StorageSelection = (() =>
 
 			const selectionDiv = document.createElement("div");
 			selectionDiv.id = "storage-selection";
+			DarkMode.on ? selectionDiv.classList.add("storage-dark") : null;
 			if (animation !== "anim") selectionDiv.style =
 			`
 			animation: none;

@@ -1,4 +1,5 @@
 /* eslint-disable no-undef */
+import DarkMode from "../dark-mode";
 import Interface from "./Interface";
 import { initProjects } from "./projects";
 import StorageSelection from "./StorageSelection";
@@ -9,6 +10,7 @@ export const loginPage = { create: () =>
 
 	const loginWindow = document.createElement("div");
 	loginWindow.id = "login-window";
+	loginWindow.classList.add(`${DarkMode.on ? "login-dark" : null}`);
 
 	const back = document.createElement("button");
 	back.id = "back-button";

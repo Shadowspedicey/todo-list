@@ -20,7 +20,7 @@ const Interface = (() =>
 		projects.id = "projects";
 		const add = document.createElement("div");
 		add.id = "add";
-		add.classList.add("project");
+		add.classList.add("project", `${DarkMode.on ? "project-dark" : null}`);
 		add.addEventListener("click", () => AddProject());
 		const plus = document.createElement("span");
 		plus.textContent = "+";
@@ -115,12 +115,12 @@ const Interface = (() =>
 	
 			const sortRight = document.createElement("button");
 			sortRight.id = "sort-right";
-			sortRight.classList.add("sort-button");
+			sortRight.classList.add("sort-button" , `${DarkMode.on ? "sort-dark" : null}`);
 			sortRight.textContent = ">";
 
 			const sortLeft = document.createElement("button");
 			sortLeft.id = "sort-left";
-			sortLeft.classList.add("sort-button");
+			sortLeft.classList.add("sort-button", `${DarkMode.on ? "sort-dark" : null}`);
 			sortLeft.textContent = "<";
 			sortDiv.appendChild(sortLeft);
 			sortDiv.appendChild(sortRight);
